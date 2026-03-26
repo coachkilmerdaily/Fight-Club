@@ -1,0 +1,23 @@
+{
+  "name": "Fight Flow Trainer",
+  "short_name": "Fight Flow",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "theme_color": "#07090d",
+  "background_color": "#07090d",
+  "description": "Fight timer with live combo callouts.",
+  "icons": [
+    {
+      "src": "./icons/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icons/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
