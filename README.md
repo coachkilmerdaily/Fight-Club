@@ -1,4 +1,4 @@
-# Fight Flow Trainer
+# Fight Club: Heavybag Drills
 
 Mobile-first boxing and kickboxing interval trainer with live combo callouts, presets, history, and PWA support.
 

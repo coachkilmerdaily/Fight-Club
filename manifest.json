@@ -1,11 +1,11 @@
 {
-  "name": "Fight Flow Trainer",
-  "short_name": "Fight Flow",
+  "name": "Fight Club: Heavybag Drills",
+  "short_name": "Heavybag",
   "start_url": "./index.html",
   "display": "standalone",
   "theme_color": "#07090d",
   "background_color": "#07090d",
-  "description": "Fight timer with live combo callouts.",
+  "description": "8-bit fight timer with live heavy bag combo callouts.",
   "icons": [
     {
       "src": "./icons/icon-192.svg",

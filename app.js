@@ -87,6 +87,8 @@
       difficulty: 'Intermediate',
       coachPersonality: 'Coach',
       calloutFrequency: 'Every 7 sec',
+      activeRecovery: false,
+      recoveryCategories: ['Mixed'],
     },
     'muay-thai': {
       entryMode: 'Muay Thai',
@@ -95,6 +97,8 @@
       difficulty: 'Intermediate',
       coachPersonality: 'Coach',
       calloutFrequency: 'Every 7 sec',
+      activeRecovery: false,
+      recoveryCategories: ['Mixed'],
     },
     chaos: {
       entryMode: 'Chaos',
@@ -103,6 +107,8 @@
       difficulty: 'Advanced',
       coachPersonality: 'Aggressive',
       calloutFrequency: 'Random',
+      activeRecovery: false,
+      recoveryCategories: ['Mixed'],
     },
     cardio: {
       entryMode: 'Cardio',
@@ -111,6 +117,8 @@
       difficulty: 'Beginner',
       coachPersonality: 'Aggressive',
       calloutFrequency: 'Every 10 sec',
+      activeRecovery: true,
+      recoveryCategories: ['Conditioning', 'Mixed'],
     },
   };
 
@@ -120,6 +128,13 @@
     comboStyle: ['Balanced', 'Pressure', 'Counter', 'Defense', 'Body shots', 'Freestyle'],
     coachPersonality: ['Minimal', 'Coach', 'Aggressive'],
     calloutFrequency: ['Every 5 sec', 'Every 7 sec', 'Every 10 sec', 'Random'],
+  };
+
+  const activeRecoveryCategories = {
+    Core: ['Sit ups', 'Leg ups', 'Russian twists', 'Window wipers'],
+    Legs: ['Sumo squats', 'Jump squats', 'Reverse lunges', 'Squat pulses'],
+    Conditioning: ['High knees', 'Mountain climbers', 'Burpees', 'Fast feet'],
+    Mixed: ['Sit ups', 'High knees', 'Russian twists', 'Sumo squats'],
   };
 
   const flavorLines = ['Sharp work.', 'Good engine.', 'You stayed in it.', 'That was clean.', 'Solid round management.'];
@@ -216,6 +231,9 @@
       rounds: 8,
       workDuration: 120,
       restDuration: 30,
+      activeRecovery: false,
+      recoveryCategories: ['Mixed'],
+      attackMode: false,
       difficulty: 'Intermediate',
       comboStyle: 'Balanced',
       calloutFrequency: 'Every 7 sec',
@@ -225,6 +243,7 @@
     preferences: {
       voiceEnabled: true,
       bellsEnabled: true,
+      uiGongEnabled: true,
       warningCues: true,
       speechRate: 0.92,
       selectedVoiceURI: '',
@@ -249,6 +268,9 @@
     countdownValue: 3,
     currentSession: null,
     warningTriggered: false,
+    attackCueTimer: null,
+    attackLoopTimer: null,
+    attackEndTimer: null,
     wakeLock: null,
     deferredPrompt: null,
   };
@@ -264,6 +286,9 @@
       coachSegment: document.getElementById('coachSegment'),
       voiceSegment: document.getElementById('voiceSegment'),
       frequencySegment: document.getElementById('frequencySegment'),
+      activeRecoveryInput: document.getElementById('activeRecoveryInput'),
+      attackModeInput: document.getElementById('attackModeInput'),
+      recoveryCategoryGrid: document.getElementById('recoveryCategoryGrid'),
       roundsInput: document.getElementById('roundsInput'),
       workInput: document.getElementById('workInput'),
       restInput: document.getElementById('restInput'),
@@ -281,7 +306,9 @@
       comboTag: document.getElementById('comboTag'),
       comboText: document.getElementById('comboText'),
       comboPreview: document.getElementById('comboPreview'),
+      restTag: document.getElementById('restTag'),
       restMessage: document.getElementById('restMessage'),
+      restCategory: document.getElementById('restCategory'),
       restPreview: document.getElementById('restPreview'),
       pauseOverlay: document.getElementById('pauseOverlay'),
       completeRounds: document.getElementById('completeRounds'),
@@ -303,6 +330,7 @@
       voiceSelect: document.getElementById('voiceSelect'),
       voiceEnabledInput: document.getElementById('voiceEnabledInput'),
       bellEnabledInput: document.getElementById('bellEnabledInput'),
+      uiGongInput: document.getElementById('uiGongInput'),
       warningEnabledInput: document.getElementById('warningEnabledInput'),
       wakeLockInput: document.getElementById('wakeLockInput'),
       largeTextInput: document.getElementById('largeTextInput'),
@@ -323,6 +351,19 @@
           const mergedSetup = { ...defaultState.setup, ...(parsed.setup || {}) };
           if (!mergedSetup.entryMode) {
             mergedSetup.entryMode = mergedSetup.mode === 'Kickboxing' ? 'Muay Thai' : mergedSetup.mode;
+          }
+          if (!mergedSetup.recoveryCategories || mergedSetup.recoveryCategories.length === 0) {
+            if (Array.isArray(mergedSetup.recoveryExercises) && mergedSetup.recoveryExercises.length > 0) {
+              const migrated = new Set();
+              mergedSetup.recoveryExercises.forEach((exercise) => {
+                Object.entries(activeRecoveryCategories).forEach(([category, exercises]) => {
+                  if (exercises.includes(exercise)) migrated.add(category);
+                });
+              });
+              mergedSetup.recoveryCategories = migrated.size ? Array.from(migrated) : ['Mixed'];
+            } else {
+              mergedSetup.recoveryCategories = ['Mixed'];
+            }
           }
           return {
             ...defaultState,
@@ -391,6 +432,20 @@
     createSegmentButtons(els.coachSegment, segmentDefinitions.coachPersonality, 'coachPersonality');
     createSegmentButtons(els.frequencySegment, segmentDefinitions.calloutFrequency, 'calloutFrequency');
     createSegmentButtons(els.voiceSegment, coachVoicePresets, 'voicePreset', (item) => item.label);
+    renderRecoveryCategoryButtons();
+  }
+
+  function renderRecoveryCategoryButtons() {
+    els.recoveryCategoryGrid.innerHTML = '';
+    Object.keys(activeRecoveryCategories).forEach((category) => {
+      const button = document.createElement('button');
+      button.className = 'segment-button';
+      button.type = 'button';
+      button.textContent = category;
+      button.dataset.recoveryCategory = category;
+      button.addEventListener('click', () => toggleRecoveryCategory(category));
+      els.recoveryCategoryGrid.appendChild(button);
+    });
   }
 
   function updateSegmentSelection() {
@@ -414,13 +469,39 @@
     els.roundsInput.value = runtime.state.setup.rounds;
     els.workInput.value = runtime.state.setup.workDuration;
     els.restInput.value = runtime.state.setup.restDuration;
+    els.activeRecoveryInput.checked = Boolean(runtime.state.setup.activeRecovery);
+    els.attackModeInput.checked = Boolean(runtime.state.setup.attackMode);
+    updateRecoveryCategorySelection();
     updateSegmentSelection();
+  }
+
+  function updateRecoveryCategorySelection() {
+    const selected = new Set(runtime.state.setup.recoveryCategories || ['Mixed']);
+    els.recoveryCategoryGrid.querySelectorAll('[data-recovery-category]').forEach((button) => {
+      button.classList.toggle('selected', selected.has(button.dataset.recoveryCategory));
+    });
+  }
+
+  function toggleRecoveryCategory(category) {
+    const selected = new Set(runtime.state.setup.recoveryCategories || ['Mixed']);
+    if (selected.has(category)) {
+      selected.delete(category);
+    } else {
+      selected.add(category);
+    }
+    if (selected.size === 0) {
+      selected.add(category);
+    }
+    runtime.state.setup.recoveryCategories = Array.from(selected);
+    updateRecoveryCategorySelection();
+    saveState();
   }
 
   function renderPreferences() {
     const prefs = runtime.state.preferences;
     els.voiceEnabledInput.checked = prefs.voiceEnabled;
     els.bellEnabledInput.checked = prefs.bellsEnabled;
+    els.uiGongInput.checked = prefs.uiGongEnabled;
     els.warningEnabledInput.checked = prefs.warningCues;
     els.speechRateInput.value = prefs.speechRate;
     els.speechRateValue.textContent = `${Number(prefs.speechRate).toFixed(2)}x`;
@@ -550,6 +631,71 @@
     oscillator.stop(start + duration + 0.04);
   }
 
+  function playButtonGong() {
+    if (runtime.state.preferences.muted || !runtime.state.preferences.uiGongEnabled) return;
+    const context = audioCtx();
+    if (!context) return;
+
+    const start = context.currentTime + 0.01;
+    const partials = [
+      { frequency: 196, duration: 0.9, gain: 0.045 },
+      { frequency: 294, duration: 0.75, gain: 0.03 },
+      { frequency: 392, duration: 0.58, gain: 0.02 },
+    ];
+
+    partials.forEach((partial, index) => {
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      oscillator.type = 'triangle';
+      oscillator.frequency.setValueAtTime(partial.frequency, start);
+      oscillator.frequency.exponentialRampToValueAtTime(partial.frequency * 0.88, start + partial.duration);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(partial.gain, start + 0.015 + index * 0.005);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + partial.duration);
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      oscillator.start(start);
+      oscillator.stop(start + partial.duration + 0.04);
+    });
+  }
+
+  function playAttackSting() {
+    if (runtime.state.preferences.muted) return;
+    playTone(420, 0.12, 0.01, 0.07);
+    playTone(560, 0.12, 0.15, 0.06);
+    playTone(420, 0.12, 0.29, 0.07);
+  }
+
+  function playAttackSirenPulse() {
+    if (runtime.state.preferences.muted) return;
+    const context = audioCtx();
+    if (!context) return;
+
+    const start = context.currentTime + 0.01;
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+
+    oscillator.type = 'sawtooth';
+    oscillator.frequency.setValueAtTime(760, start);
+    oscillator.frequency.exponentialRampToValueAtTime(420, start + 0.42);
+
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.exponentialRampToValueAtTime(0.05, start + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.52);
+
+    oscillator.connect(gain);
+    gain.connect(context.destination);
+    oscillator.start(start);
+    oscillator.stop(start + 0.56);
+
+    document.body.classList.remove('attack-pulse');
+    void document.body.offsetWidth;
+    document.body.classList.add('attack-pulse');
+    window.setTimeout(() => {
+      document.body.classList.remove('attack-pulse');
+    }, 260);
+  }
+
   function playCue(kind) {
     if (!runtime.state.preferences.bellsEnabled || runtime.state.preferences.muted) return;
     if (kind === 'start') {
@@ -616,6 +762,21 @@
     return copy;
   }
 
+  function createRecoveryRotation(categories) {
+    const selectedCategories = categories && categories.length ? categories : ['Mixed'];
+    const categoryQueue = shuffle(selectedCategories);
+    const exerciseQueues = {};
+
+    selectedCategories.forEach((category) => {
+      exerciseQueues[category] = shuffle(activeRecoveryCategories[category] || activeRecoveryCategories.Mixed);
+    });
+
+    return {
+      categoryQueue,
+      exerciseQueues,
+    };
+  }
+
   function buildProceduralCombos(maxLength) {
     const mode = runtime.state.setup.mode;
     const style = runtime.state.setup.comboStyle;
@@ -658,6 +819,29 @@
     return 'Balanced combo';
   }
 
+  function pickRecoveryExercise(session) {
+    const categories = session.recoveryCategories && session.recoveryCategories.length
+      ? session.recoveryCategories
+      : ['Mixed'];
+
+    if (!session.recoveryRotation) {
+      session.recoveryRotation = createRecoveryRotation(categories);
+    }
+
+    if (!session.recoveryRotation.categoryQueue.length) {
+      session.recoveryRotation.categoryQueue = shuffle(categories);
+    }
+
+    const category = session.recoveryRotation.categoryQueue.shift() || 'Mixed';
+    session.currentRecoveryCategory = category;
+
+    if (!session.recoveryRotation.exerciseQueues[category] || !session.recoveryRotation.exerciseQueues[category].length) {
+      session.recoveryRotation.exerciseQueues[category] = shuffle(activeRecoveryCategories[category] || activeRecoveryCategories.Mixed);
+    }
+
+    return session.recoveryRotation.exerciseQueues[category].shift() || activeRecoveryCategories.Mixed[0];
+  }
+
   function updateRing(progress) {
     els.progressRing.style.strokeDasharray = String(RING_CIRCUMFERENCE);
     els.progressRing.style.strokeDashoffset = String(RING_CIRCUMFERENCE * (1 - progress));
@@ -682,7 +866,8 @@
       }
       clearInterval(runtime.countdownTimer);
       document.body.classList.remove('warning-state');
-      els.countdownNumber.textContent = 'Go';
+      els.countdownNumber.textContent = 'FIGHT';
+      speak('Fight');
       playCue('start');
       setTimeout(startSession, 450);
     }, 900);
@@ -704,6 +889,11 @@
       currentCombo: '',
       nextCombo: '',
       singleCallout: true,
+      recoveryRotation: createRecoveryRotation(runtime.state.setup.recoveryCategories),
+      attackActive: false,
+      attackEventUsed: false,
+      attackRemaining: 0,
+      attackEndsAt: 0,
     };
     runtime.warningTriggered = false;
     showScreen('live');
@@ -716,7 +906,12 @@
   function beginPhase(phase) {
     clearInterval(runtime.phaseTimer);
     clearTimeout(runtime.comboTimer);
+    clearTimeout(runtime.attackCueTimer);
+    clearInterval(runtime.attackLoopTimer);
+    clearTimeout(runtime.attackEndTimer);
     runtime.warningTriggered = false;
+    document.body.classList.remove('finish-him-state');
+    document.body.classList.remove('attack-mode-state');
     const session = runtime.currentSession;
     if (!session) return;
     session.phase = phase;
@@ -732,8 +927,10 @@
       session.nextCombo = '';
       session.lastCombo = session.currentCombo;
       session.combosCalled += 1;
+      session.attackActive = false;
       updateLiveCombo(true);
       speakCallout(session.currentCombo);
+      scheduleAttackMode();
     } else {
       document.querySelector('[data-screen="live"]').classList.remove('working');
       document.querySelector('[data-screen="live"]').classList.add('resting');
@@ -741,13 +938,73 @@
       if (runtime.state.preferences.vibrateOnRest) vibrate([80, 50, 80]);
       els.comboCard.classList.add('hidden');
       els.restCard.classList.remove('hidden');
-      els.restMessage.textContent = restLines[Math.floor(Math.random() * restLines.length)];
+      const activeRecoveryEnabled = Boolean(session.activeRecovery);
+      const recoveryExercise = activeRecoveryEnabled ? pickRecoveryExercise(session) : null;
+      els.restTag.textContent = activeRecoveryEnabled ? 'Active Recovery' : 'Recovery';
+      els.restMessage.textContent = activeRecoveryEnabled ? recoveryExercise : restLines[Math.floor(Math.random() * restLines.length)];
+      els.restCategory.textContent = activeRecoveryEnabled
+        ? `Category: ${session.currentRecoveryCategory || 'Mixed'}`
+        : 'Category: Recovery';
       els.restPreview.textContent = session.round < session.rounds ? `Up next: Round ${session.round + 1}` : 'Last push coming';
-      els.liveStatusText.textContent = 'Reset and breathe';
-      speak(els.restMessage.textContent);
+      els.liveStatusText.textContent = activeRecoveryEnabled ? 'Active recovery' : 'Reset and breathe';
+      speak(activeRecoveryEnabled ? `Active recovery. ${els.restMessage.textContent}.` : els.restMessage.textContent);
     }
     renderLiveFrame();
     runtime.phaseTimer = window.setInterval(tickPhase, 250);
+  }
+
+  function scheduleAttackMode() {
+    const session = runtime.currentSession;
+    if (!session || !session.attackMode || session.attackEventUsed) return;
+    if (session.workDuration < 25) return;
+    if (Math.random() > 0.42) return;
+
+    const maxStart = Math.max(6, session.workDuration - 20);
+    const startDelay = 5 + Math.random() * (maxStart - 5);
+    const attackLength = 5 + Math.floor(Math.random() * 11);
+
+    runtime.attackCueTimer = window.setTimeout(() => {
+      if (!runtime.currentSession || runtime.currentSession.phase !== 'work') return;
+      startAttackMode(attackLength);
+    }, startDelay * 1000);
+  }
+
+  function startAttackMode(durationSeconds) {
+    const session = runtime.currentSession;
+    if (!session || session.attackActive || session.phase !== 'work') return;
+    session.attackActive = true;
+    session.attackEventUsed = true;
+    session.attackRemaining = durationSeconds;
+    session.attackEndsAt = Date.now() + durationSeconds * 1000;
+    document.body.classList.add('attack-mode-state');
+    els.liveStatusText.textContent = 'ATTACK MODE';
+    els.comboPreview.textContent = `Nonstop for ${durationSeconds}s`;
+    const modeText = session.entryMode === 'Muay Thai' || session.entryMode === 'Chaos'
+      ? 'Nonstop strikes'
+      : 'Nonstop punches';
+    els.comboText.textContent = modeText;
+    speak(`Attack mode. ${modeText}.`);
+    playAttackSting();
+    playAttackSirenPulse();
+    runtime.attackLoopTimer = window.setInterval(playAttackSirenPulse, 620);
+    runtime.attackEndTimer = window.setTimeout(() => {
+      stopAttackMode();
+    }, durationSeconds * 1000);
+  }
+
+  function stopAttackMode() {
+    const session = runtime.currentSession;
+    clearInterval(runtime.attackLoopTimer);
+    runtime.attackLoopTimer = null;
+    clearTimeout(runtime.attackEndTimer);
+    runtime.attackEndTimer = null;
+    if (!session || !session.attackActive) return;
+    session.attackActive = false;
+    session.attackRemaining = 0;
+    session.attackEndsAt = 0;
+    document.body.classList.remove('attack-mode-state');
+    updateLiveCombo();
+    renderLiveFrame();
   }
 
   function tickPhase() {
@@ -760,12 +1017,14 @@
       runtime.warningTriggered = true;
       playCue('warning');
       if (runtime.state.preferences.vibrateOnWarning) vibrate([60, 80, 60]);
-      speak('10 seconds');
-      document.body.classList.add('warning-state');
+      speak('Finish him');
+      document.body.classList.add('finish-him-state');
+      els.liveStatusText.textContent = 'FINISH HIM';
     }
     if (remaining > 0) return;
 
     document.body.classList.remove('warning-state');
+    document.body.classList.remove('finish-him-state');
     clearInterval(runtime.phaseTimer);
     if (session.phase === 'work') {
       if (session.round >= session.rounds) {
@@ -848,6 +1107,11 @@
     els.livePhase.className = `phase-pill ${session.phase === 'work' ? '' : 'rest'}`.trim();
     els.liveModeLabel.textContent = (session.entryMode || session.mode).toUpperCase();
     els.liveTimer.textContent = formatClock(session.timeRemaining);
+    if (session.attackActive) {
+      els.liveStatusText.textContent = 'ATTACK MODE';
+    } else if (session.phase === 'work' && session.timeRemaining <= 10) {
+      els.liveStatusText.textContent = 'FINISH HIM';
+    }
     const phaseLength = session.phase === 'work' ? session.workDuration : session.restDuration;
     updateRing(Math.max(0, 1 - session.timeRemaining / phaseLength));
   }
@@ -856,7 +1120,13 @@
     if (!runtime.currentSession) return;
     clearInterval(runtime.phaseTimer);
     clearTimeout(runtime.comboTimer);
+    clearTimeout(runtime.attackCueTimer);
+    clearInterval(runtime.attackLoopTimer);
+    clearTimeout(runtime.attackEndTimer);
     runtime.currentSession.timeRemaining = Math.max(0, Math.ceil((runtime.phaseEndTime - Date.now()) / 1000));
+    if (runtime.currentSession.attackActive) {
+      runtime.currentSession.attackRemaining = Math.max(0, Math.ceil((runtime.currentSession.attackEndsAt - Date.now()) / 1000));
+    }
     stopSpeech();
     els.pauseOverlay.classList.remove('hidden');
   }
@@ -867,7 +1137,15 @@
     runtime.phaseEndTime = Date.now() + runtime.currentSession.timeRemaining * 1000;
     runtime.phaseTimer = window.setInterval(tickPhase, 250);
     if (runtime.currentSession.phase === 'work') {
-      speakCallout(runtime.currentSession.currentCombo);
+      if (runtime.currentSession.attackActive) {
+        runtime.currentSession.attackEndsAt = Date.now() + runtime.currentSession.attackRemaining * 1000;
+        playAttackSirenPulse();
+        runtime.attackLoopTimer = window.setInterval(playAttackSirenPulse, 620);
+        runtime.attackEndTimer = window.setTimeout(stopAttackMode, runtime.currentSession.attackRemaining * 1000);
+      } else {
+        speakCallout(runtime.currentSession.currentCombo);
+        scheduleAttackMode();
+      }
     }
   }
 
@@ -875,9 +1153,14 @@
     clearInterval(runtime.phaseTimer);
     clearTimeout(runtime.comboTimer);
     clearInterval(runtime.countdownTimer);
+    clearTimeout(runtime.attackCueTimer);
+    clearInterval(runtime.attackLoopTimer);
+    clearTimeout(runtime.attackEndTimer);
     stopSpeech();
     runtime.currentSession = null;
     document.body.classList.remove('warning-state');
+    document.body.classList.remove('finish-him-state');
+    document.body.classList.remove('attack-mode-state');
     els.pauseOverlay.classList.add('hidden');
     showScreen('home');
   }
@@ -924,6 +1207,9 @@
       rounds: setup.rounds,
       workDuration: setup.workDuration,
       restDuration: setup.restDuration,
+      activeRecovery: setup.activeRecovery,
+      recoveryCategories: setup.recoveryCategories,
+      attackMode: setup.attackMode,
       difficulty: setup.difficulty,
       comboStyle: setup.comboStyle,
       calloutFrequency: setup.calloutFrequency,
@@ -945,6 +1231,9 @@
       rounds: preset.rounds,
       workDuration: preset.workDuration,
       restDuration: preset.restDuration,
+      activeRecovery: Boolean(preset.activeRecovery),
+      recoveryCategories: preset.recoveryCategories || ['Mixed'],
+      attackMode: Boolean(preset.attackMode),
       difficulty: preset.difficulty,
       comboStyle: preset.comboStyle,
       calloutFrequency: preset.calloutFrequency,
@@ -1087,6 +1376,7 @@
   function registerEvents() {
     document.querySelectorAll('[data-go]').forEach((button) => {
       button.addEventListener('click', () => {
+        playButtonGong();
         const target = button.dataset.go;
         const returnScreen = button.dataset.settingsReturn;
         goToScreen(target, returnScreen ? { returnScreen } : undefined);
@@ -1096,6 +1386,9 @@
     document.querySelectorAll('[data-action]').forEach((button) => {
       button.addEventListener('click', () => {
         const action = button.dataset.action;
+        if (action !== 'mute-session') {
+          playButtonGong();
+        }
         if (action === 'launch-mode') return launchQuickMode(button.dataset.launchMode);
         if (action === 'start-session') return showScreen('setup');
         if (action === 'quick-start') return startCountdown();
@@ -1114,16 +1407,33 @@
     els.roundsInput.addEventListener('input', readNumericInputs);
     els.workInput.addEventListener('input', readNumericInputs);
     els.restInput.addEventListener('input', readNumericInputs);
+    els.activeRecoveryInput.addEventListener('change', () => {
+      playButtonGong();
+      runtime.state.setup.activeRecovery = els.activeRecoveryInput.checked;
+      saveState();
+    });
+    els.attackModeInput.addEventListener('change', () => {
+      playButtonGong();
+      runtime.state.setup.attackMode = els.attackModeInput.checked;
+      saveState();
+    });
 
     els.voiceEnabledInput.addEventListener('change', () => {
+      playButtonGong();
       runtime.state.preferences.voiceEnabled = els.voiceEnabledInput.checked;
       saveState();
     });
     els.bellEnabledInput.addEventListener('change', () => {
+      playButtonGong();
       runtime.state.preferences.bellsEnabled = els.bellEnabledInput.checked;
       saveState();
     });
+    els.uiGongInput.addEventListener('change', () => {
+      runtime.state.preferences.uiGongEnabled = els.uiGongInput.checked;
+      saveState();
+    });
     els.warningEnabledInput.addEventListener('change', () => {
+      playButtonGong();
       runtime.state.preferences.warningCues = els.warningEnabledInput.checked;
       saveState();
     });
@@ -1137,42 +1447,66 @@
       saveState();
     });
     els.largeTextInput.addEventListener('change', () => {
+      playButtonGong();
       runtime.state.preferences.largeText = els.largeTextInput.checked;
       renderPreferences();
       saveState();
     });
     els.wakeLockInput.addEventListener('change', async () => {
+      playButtonGong();
       runtime.state.preferences.keepAwake = els.wakeLockInput.checked;
       await requestWakeLock(els.wakeLockInput.checked);
       saveState();
     });
     els.vibrateStartInput.addEventListener('change', () => {
+      playButtonGong();
       runtime.state.preferences.vibrateOnStart = els.vibrateStartInput.checked;
       saveState();
     });
     els.vibrateWarningInput.addEventListener('change', () => {
+      playButtonGong();
       runtime.state.preferences.vibrateOnWarning = els.vibrateWarningInput.checked;
       saveState();
     });
     els.vibrateRestInput.addEventListener('change', () => {
+      playButtonGong();
       runtime.state.preferences.vibrateOnRest = els.vibrateRestInput.checked;
       saveState();
     });
 
-    els.settingsBackButton.addEventListener('click', () => showScreen(runtime.state.returnScreen || 'home'));
-    els.installButton.addEventListener('click', installApp);
-    els.resetDataButton.addEventListener('click', resetSavedData);
-    els.soundToggle.addEventListener('click', toggleMute);
+    els.settingsBackButton.addEventListener('click', () => {
+      playButtonGong();
+      showScreen(runtime.state.returnScreen || 'home');
+    });
+    els.installButton.addEventListener('click', () => {
+      playButtonGong();
+      installApp();
+    });
+    els.resetDataButton.addEventListener('click', () => {
+      playButtonGong();
+      resetSavedData();
+    });
+    els.soundToggle.addEventListener('click', () => {
+      playButtonGong();
+      toggleMute();
+    });
 
     els.presetList.addEventListener('click', (event) => {
       const target = event.target;
       if (!(target instanceof HTMLElement)) return;
       if (target.dataset.presetStart) {
+        playButtonGong();
         applyPreset(target.dataset.presetStart);
         startCountdown();
       }
-      if (target.dataset.presetEdit) applyPreset(target.dataset.presetEdit);
-      if (target.dataset.presetDelete) deletePreset(target.dataset.presetDelete);
+      if (target.dataset.presetEdit) {
+        playButtonGong();
+        applyPreset(target.dataset.presetEdit);
+      }
+      if (target.dataset.presetDelete) {
+        playButtonGong();
+        deletePreset(target.dataset.presetDelete);
+      }
     });
 
     window.addEventListener('keydown', (event) => {

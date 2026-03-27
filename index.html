@@ -6,9 +6,9 @@
       name="viewport"
       content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
     />
-    <title>Fight Flow Trainer</title>
+    <title>Fight Club: Heavybag Drills</title>
     <meta name="theme-color" content="#07090d" />
-    <meta name="description" content="Fight timer with live combo callouts." />
+    <meta name="description" content="8-bit fight timer with live heavy bag combo callouts." />
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="./icons/icon-192.svg" />
@@ -22,12 +22,28 @@
       <main class="app-frame">
         <section class="screen screen-active" data-screen="home">
           <header class="brand-lockup">
-            <div class="brand-mark">FF</div>
+            <div class="brand-mark">FC</div>
             <div>
-              <p class="eyebrow">Fight Flow Trainer</p>
-              <h1>Fight timer with live combo callouts</h1>
+              <p class="eyebrow">Fight Club: Heavybag Drills</p>
+              <h1>Heavy bag drills with arcade fight energy</h1>
             </div>
           </header>
+
+          <section class="hero-scene" aria-hidden="true">
+            <div class="scene-banner">Shaolin arcade mode</div>
+            <div class="arcade-stage">
+              <div class="heavybag-chain"></div>
+              <div class="heavybag"></div>
+              <div class="fighter">
+                <span class="fighter-head"></span>
+                <span class="fighter-body"></span>
+                <span class="fighter-arm rear-arm"></span>
+                <span class="fighter-arm lead-arm"></span>
+                <span class="fighter-leg rear-leg"></span>
+                <span class="fighter-leg lead-leg"></span>
+              </div>
+            </div>
+          </section>
 
           <div class="home-mode-grid">
             <button class="mode-card mode-card-boxing" data-action="launch-mode" data-launch-mode="boxing">
@@ -102,6 +118,22 @@
 
             <section class="card">
               <div class="block-title">
+                <h3>Recovery Mode</h3>
+              </div>
+              <div class="settings-list">
+                <label class="toggle-line">
+                  <span>Active Recovery</span>
+                  <input id="activeRecoveryInput" type="checkbox" />
+                </label>
+                <div>
+                  <p class="combo-tag">Recovery Categories</p>
+                  <div id="recoveryCategoryGrid" class="segment-grid segment-grid-tight"></div>
+                </div>
+              </div>
+            </section>
+
+            <section class="card">
+              <div class="block-title">
                 <h3>Combo Style</h3>
               </div>
               <div class="segment-grid segment-grid-tight" id="styleSegment"></div>
@@ -128,6 +160,18 @@
               <div class="segment-grid" id="frequencySegment"></div>
             </section>
 
+            <section class="card">
+              <div class="block-title">
+                <h3>Attack Mode</h3>
+              </div>
+              <div class="settings-list">
+                <label class="toggle-line">
+                  <span>Randomized Attack Mode</span>
+                  <input id="attackModeInput" type="checkbox" />
+                </label>
+              </div>
+            </section>
+
             <div class="cta-stack">
               <button class="button button-primary button-xl" data-action="begin-countdown">Start Session</button>
               <button class="button button-secondary button-xl" data-action="save-preset">Save as Preset</button>
@@ -147,6 +191,15 @@
         </section>
 
         <section class="screen screen-live" data-screen="live">
+          <div class="attack-fx" aria-hidden="true">
+            <div class="attack-flash"></div>
+            <div class="attack-lightning bolt-left"></div>
+            <div class="attack-lightning bolt-right"></div>
+            <div class="blood-spray spray-left"></div>
+            <div class="blood-spray spray-right"></div>
+            <div class="attack-banner">ATTACK MODE</div>
+          </div>
+
           <div class="live-topbar">
             <div>
               <p class="eyebrow eyebrow-inline" id="liveRoundLabel">Round 1 / 8</p>
@@ -179,8 +232,9 @@
           </section>
 
           <section id="restCard" class="live-card rest-card hidden">
-            <p class="combo-tag">Recovery</p>
+            <p id="restTag" class="combo-tag">Recovery</p>
             <div id="restMessage" class="combo-text">Breathe</div>
+            <p id="restCategory" class="combo-tag">Category: Recovery</p>
             <p id="restPreview" class="combo-preview">Next round coming</p>
           </section>
 
@@ -309,6 +363,7 @@
               <div class="settings-list">
                 <label class="toggle-line"><span>Voice on</span><input id="voiceEnabledInput" type="checkbox" checked /></label>
                 <label class="toggle-line"><span>Bell on</span><input id="bellEnabledInput" type="checkbox" checked /></label>
+                <label class="toggle-line"><span>UI gong sounds</span><input id="uiGongInput" type="checkbox" checked /></label>
                 <label class="toggle-line"><span>Warning cues</span><input id="warningEnabledInput" type="checkbox" checked /></label>
                 <label class="field">
                   <span>Speech speed</span>

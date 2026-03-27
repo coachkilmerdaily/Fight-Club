@@ -141,6 +141,161 @@ button {
   align-items: flex-start;
 }
 
+.hero-scene {
+  margin: 1.2rem 0 1.1rem;
+  border: 3px solid var(--gold);
+  background:
+    linear-gradient(180deg, rgba(212, 171, 75, 0.08), rgba(193, 31, 23, 0.08)),
+    #120c0a;
+  box-shadow: var(--shadow);
+  position: relative;
+}
+
+.hero-scene::before {
+  content: '';
+  position: absolute;
+  inset: 0.3rem;
+  border: 1px solid var(--line-soft);
+  pointer-events: none;
+}
+
+.scene-banner {
+  padding: 0.55rem 0.8rem;
+  border-bottom: 3px solid var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.72rem;
+  color: var(--gold);
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.arcade-stage {
+  position: relative;
+  height: 13rem;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(255, 229, 170, 0.06), transparent 45%),
+    linear-gradient(180deg, transparent 68%, rgba(212, 171, 75, 0.16) 68% 72%, #22130f 72%);
+}
+
+.heavybag-chain,
+.heavybag,
+.fighter,
+.fighter span {
+  position: absolute;
+  image-rendering: pixelated;
+}
+
+.heavybag-chain {
+  top: 0.9rem;
+  left: calc(50% + 2.1rem);
+  width: 0.45rem;
+  height: 2.2rem;
+  background: var(--gold);
+  box-shadow:
+    0 0.55rem 0 var(--gold),
+    0 1.1rem 0 var(--gold),
+    0 1.65rem 0 var(--gold);
+}
+
+.heavybag {
+  top: 3rem;
+  left: calc(50% + 1rem);
+  width: 3.75rem;
+  height: 5.8rem;
+  background: linear-gradient(180deg, #a01c16, #5b110f);
+  border: 3px solid #f0c35a;
+  box-shadow:
+    inset 0 0 0 3px rgba(0, 0, 0, 0.24),
+    0.9rem 0 0 rgba(0, 0, 0, 0.22);
+}
+
+.fighter {
+  left: calc(50% - 6.7rem);
+  bottom: 1.15rem;
+  width: 7rem;
+  height: 8.4rem;
+}
+
+.fighter-head {
+  top: 0.35rem;
+  left: 1.8rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  background: #f0c49a;
+  box-shadow:
+    0.55rem 0 0 #f0c49a,
+    0 0.55rem 0 #f0c49a,
+    0.55rem 0.55rem 0 #f0c49a,
+    0 1.1rem 0 #2a1713,
+    0.55rem 1.1rem 0 #2a1713;
+}
+
+.fighter-body {
+  top: 2.3rem;
+  left: 1.55rem;
+  width: 1.8rem;
+  height: 2.2rem;
+  background: #d4ab4b;
+  box-shadow:
+    0.6rem 0 0 #d4ab4b,
+    0 0.6rem 0 #d4ab4b,
+    0.6rem 0.6rem 0 #d4ab4b,
+    0 1.2rem 0 #8c1915,
+    0.6rem 1.2rem 0 #8c1915,
+    0 1.8rem 0 #8c1915,
+    0.6rem 1.8rem 0 #8c1915;
+}
+
+.fighter-arm {
+  width: 1.4rem;
+  height: 0.65rem;
+  background: #f0c49a;
+}
+
+.rear-arm {
+  top: 2.7rem;
+  left: 0.5rem;
+  box-shadow:
+    0.65rem 0 0 #f0c49a,
+    1.3rem 0 0 #7d1713;
+}
+
+.lead-arm {
+  top: 2.15rem;
+  left: 3.6rem;
+  width: 1.65rem;
+  box-shadow:
+    0.7rem 0 0 #f0c49a,
+    1.4rem 0 0 #f0c49a,
+    2.1rem 0.65rem 0 #f0c49a,
+    2.75rem 0.65rem 0 #f0c49a;
+}
+
+.fighter-leg {
+  width: 0.75rem;
+  height: 2.45rem;
+  background: #f0c49a;
+}
+
+.rear-leg {
+  top: 5.55rem;
+  left: 1.95rem;
+  box-shadow:
+    0 0.7rem 0 #f0c49a,
+    -0.65rem 1.4rem 0 #f0c49a;
+}
+
+.lead-leg {
+  top: 5.2rem;
+  left: 3.15rem;
+  box-shadow:
+    0 0.7rem 0 #f0c49a,
+    0.7rem 1.3rem 0 #f0c49a,
+    1.4rem 1.9rem 0 #f0c49a,
+    2.1rem 1.9rem 0 #f0c49a;
+}
+
 .brand-mark {
   width: 3.25rem;
   height: 3.25rem;
@@ -451,6 +606,7 @@ h3 {
 .screen-countdown,
 .screen-live {
   justify-content: space-between;
+  position: relative;
 }
 
 .screen-countdown {
@@ -586,6 +742,91 @@ h3 {
   align-content: center;
   gap: 0.65rem;
   text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+.attack-fx {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.attack-flash,
+.attack-lightning,
+.blood-spray {
+  position: absolute;
+  opacity: 0;
+}
+
+.attack-flash {
+  inset: 0;
+  background:
+    radial-gradient(circle at center, rgba(255, 245, 220, 0.2), rgba(193, 31, 23, 0.28) 45%, transparent 72%);
+}
+
+.attack-lightning {
+  top: 0;
+  width: 8rem;
+  height: 100%;
+  background: linear-gradient(180deg, rgba(255, 248, 214, 0.9), rgba(255, 220, 120, 0.7), transparent 80%);
+  clip-path: polygon(46% 0, 62% 0, 51% 22%, 72% 22%, 38% 55%, 55% 55%, 28% 100%, 36% 72%, 18% 72%);
+  filter: drop-shadow(0 0 10px rgba(255, 225, 125, 0.75));
+}
+
+.bolt-left {
+  left: 0.6rem;
+}
+
+.bolt-right {
+  right: 0.6rem;
+  transform: scaleX(-1);
+}
+
+.blood-spray {
+  width: 8rem;
+  height: 6rem;
+  background:
+    radial-gradient(circle, rgba(193, 31, 23, 0.95) 0 18%, transparent 19%),
+    radial-gradient(circle, rgba(193, 31, 23, 0.82) 0 16%, transparent 17%),
+    radial-gradient(circle, rgba(193, 31, 23, 0.72) 0 12%, transparent 13%);
+  background-size: 1.3rem 1.3rem, 1rem 1rem, 0.8rem 0.8rem;
+  image-rendering: pixelated;
+}
+
+.attack-banner {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  transform: translate(-50%, -50%);
+  min-width: min(88vw, 22rem);
+  padding: 0.8rem 1rem;
+  border: 4px solid #ffd27a;
+  background: linear-gradient(180deg, rgba(193, 31, 23, 0.96), rgba(106, 17, 13, 0.96));
+  color: #fff3cf;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: clamp(1.1rem, 5vw, 1.8rem);
+  font-weight: 900;
+  box-shadow:
+    0 0 0 4px #050404,
+    8px 8px 0 rgba(0, 0, 0, 0.65);
+  opacity: 0;
+}
+
+.spray-left {
+  left: -0.4rem;
+  top: 4.4rem;
+  transform: rotate(-14deg);
+}
+
+.spray-right {
+  right: -0.4rem;
+  top: 6.2rem;
+  transform: scaleX(-1) rotate(-8deg);
 }
 
 .combo-tag {
@@ -718,6 +959,81 @@ h3 {
   color: var(--warning);
 }
 
+.finish-him-state .screen-live.working {
+  background:
+    linear-gradient(180deg, rgba(193, 31, 23, 0.42), rgba(193, 31, 23, 0.08) 55%, transparent 100%);
+  animation: finish-flash 420ms steps(2, end) infinite;
+}
+
+.finish-him-state .live-timer,
+.finish-him-state .combo-text,
+.finish-him-state .live-status-text {
+  color: #fff1c8;
+  text-shadow:
+    3px 3px 0 #c11f17,
+    6px 6px 0 rgba(0, 0, 0, 0.55);
+}
+
+.finish-him-state .live-status-text {
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+
+.attack-mode-state .screen-live.working {
+  animation: attack-shake 120ms steps(2, end) infinite;
+}
+
+.attack-mode-state .combo-card {
+  background: linear-gradient(180deg, rgba(193, 31, 23, 0.34), rgba(23, 15, 13, 0.96));
+  border-color: #ffd27a;
+}
+
+.attack-mode-state .live-topbar,
+.attack-mode-state .ring-wrap,
+.attack-mode-state .bottom-bar {
+  opacity: 0.32;
+  filter: saturate(0.8) brightness(0.72);
+}
+
+.attack-mode-state .live-timer,
+.attack-mode-state .combo-text,
+.attack-mode-state .live-status-text,
+.attack-mode-state .combo-preview {
+  color: #fff1c8;
+  text-shadow:
+    3px 3px 0 #c11f17,
+    6px 6px 0 rgba(0, 0, 0, 0.62);
+}
+
+.attack-mode-state .live-status-text {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+}
+
+.attack-mode-state .attack-banner {
+  opacity: 0.92;
+}
+
+.attack-mode-state.attack-pulse .attack-flash {
+  opacity: 1;
+  animation: attack-flare 240ms steps(2, end) 1;
+}
+
+.attack-mode-state.attack-pulse .attack-lightning {
+  opacity: 1;
+  animation: lightning-flicker 260ms steps(2, end) 1;
+}
+
+.attack-mode-state.attack-pulse .blood-spray {
+  opacity: 1;
+  animation: blood-pop 280ms steps(2, end) 1;
+}
+
+.attack-mode-state.attack-pulse .attack-banner {
+  transform: translate(-50%, -50%) scale(1.06);
+  filter: brightness(1.18);
+}
+
 .screen-live.resting {
   background:
     linear-gradient(180deg, rgba(212, 171, 75, 0.08), transparent 45%);
@@ -737,6 +1053,71 @@ h3 {
   50% {
     transform: scale(1.04);
     opacity: 1;
+  }
+}
+
+@keyframes finish-flash {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.28) saturate(1.15);
+  }
+}
+
+@keyframes attack-shake {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(-3px, 2px);
+  }
+  50% {
+    transform: translate(3px, -2px);
+  }
+  75% {
+    transform: translate(-2px, -2px);
+  }
+}
+
+@keyframes attack-flare {
+  0%,
+  100% {
+    opacity: 0.28;
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 0.62;
+    filter: brightness(1.28);
+  }
+}
+
+@keyframes lightning-flicker {
+  0%,
+  100% {
+    opacity: 0.1;
+  }
+  20%,
+  60% {
+    opacity: 0.88;
+  }
+  30%,
+  70% {
+    opacity: 0.28;
+  }
+}
+
+@keyframes blood-pop {
+  0%,
+  100% {
+    opacity: 0.18;
+    transform: scale(0.96);
+  }
+  40% {
+    opacity: 0.72;
+    transform: scale(1.06);
   }
 }
 
