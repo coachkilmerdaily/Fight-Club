@@ -29,16 +29,30 @@
             </div>
           </header>
 
-          <div class="home-actions">
-            <button class="button button-primary button-xl" data-action="start-session">Start Session</button>
-            <button class="button button-secondary button-xl" data-action="quick-start">Quick Start</button>
+          <div class="home-mode-grid">
+            <button class="mode-card mode-card-boxing" data-action="launch-mode" data-launch-mode="boxing">
+              <span class="mode-kicker">Pure hands</span>
+              <strong>Boxing</strong>
+            </button>
+            <button class="mode-card mode-card-muay" data-action="launch-mode" data-launch-mode="muay-thai">
+              <span class="mode-kicker">Kicks, knees, teeps</span>
+              <strong>Muay Thai</strong>
+            </button>
+            <button class="mode-card mode-card-chaos" data-action="launch-mode" data-launch-mode="chaos">
+              <span class="mode-kicker">Wild mixups</span>
+              <strong>Chaos</strong>
+            </button>
+            <button class="mode-card mode-card-cardio" data-action="launch-mode" data-launch-mode="cardio">
+              <span class="mode-kicker">Conditioning pace</span>
+              <strong>Cardio</strong>
+            </button>
           </div>
 
           <nav class="home-nav">
+            <button class="button button-ghost" data-go="setup">Customize</button>
             <button class="button button-ghost" data-go="presets">Presets</button>
             <button class="button button-ghost" data-go="history">History</button>
             <button class="button button-ghost" data-go="settings">Settings</button>
-            <button class="button button-ghost" data-go="setup">Notes</button>
           </nav>
         </section>
 
@@ -91,6 +105,13 @@
                 <h3>Combo Style</h3>
               </div>
               <div class="segment-grid segment-grid-tight" id="styleSegment"></div>
+            </section>
+
+            <section class="card">
+              <div class="block-title">
+                <h3>Coach Style</h3>
+              </div>
+              <div class="segment-grid" id="coachSegment"></div>
             </section>
 
             <section class="card">

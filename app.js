@@ -79,20 +79,55 @@
     },
   ];
 
+  const quickLaunchModes = {
+    boxing: {
+      entryMode: 'Boxing',
+      mode: 'Boxing',
+      comboStyle: 'Balanced',
+      difficulty: 'Intermediate',
+      coachPersonality: 'Coach',
+      calloutFrequency: 'Every 7 sec',
+    },
+    'muay-thai': {
+      entryMode: 'Muay Thai',
+      mode: 'Kickboxing',
+      comboStyle: 'Balanced',
+      difficulty: 'Intermediate',
+      coachPersonality: 'Coach',
+      calloutFrequency: 'Every 7 sec',
+    },
+    chaos: {
+      entryMode: 'Chaos',
+      mode: 'Kickboxing',
+      comboStyle: 'Freestyle',
+      difficulty: 'Advanced',
+      coachPersonality: 'Aggressive',
+      calloutFrequency: 'Random',
+    },
+    cardio: {
+      entryMode: 'Cardio',
+      mode: 'Boxing',
+      comboStyle: 'Pressure',
+      difficulty: 'Beginner',
+      coachPersonality: 'Aggressive',
+      calloutFrequency: 'Every 10 sec',
+    },
+  };
+
   const segmentDefinitions = {
     mode: ['Boxing', 'Kickboxing'],
     difficulty: ['Beginner', 'Intermediate', 'Advanced'],
     comboStyle: ['Balanced', 'Pressure', 'Counter', 'Defense', 'Body shots', 'Freestyle'],
+    coachPersonality: ['Minimal', 'Coach', 'Aggressive'],
     calloutFrequency: ['Every 5 sec', 'Every 7 sec', 'Every 10 sec', 'Random'],
   };
 
   const flavorLines = ['Sharp work.', 'Good engine.', 'You stayed in it.', 'That was clean.', 'Solid round management.'];
   const restLines = ['Breathe', 'Reset', 'Hands up', 'Next round coming'];
   const voiceLeadIns = {
-    Minimal: ['', '', ''],
-    Coach: ['Sharp.', 'Stay set.', 'Clean work.'],
-    Hard: ['Let it go.', 'Push the pace.', 'Stay heavy.'],
-    'Fight Night': ['Stay busy.', 'Own the center.', 'Crowd the space.'],
+    Minimal: [''],
+    Coach: ['Sharp.', 'Set it.', 'Clean.'],
+    Aggressive: ['Drive.', 'Rip it.', 'Go.'],
   };
 
   const comboFamilies = {
@@ -176,6 +211,7 @@
     screen: 'home',
     returnScreen: 'home',
     setup: {
+      entryMode: 'Boxing',
       mode: 'Boxing',
       rounds: 8,
       workDuration: 120,
@@ -190,7 +226,7 @@
       voiceEnabled: true,
       bellsEnabled: true,
       warningCues: true,
-      speechRate: 1,
+      speechRate: 0.92,
       selectedVoiceURI: '',
       largeText: false,
       keepAwake: false,
@@ -225,6 +261,7 @@
       typeSegment: document.getElementById('typeSegment'),
       difficultySegment: document.getElementById('difficultySegment'),
       styleSegment: document.getElementById('styleSegment'),
+      coachSegment: document.getElementById('coachSegment'),
       voiceSegment: document.getElementById('voiceSegment'),
       frequencySegment: document.getElementById('frequencySegment'),
       roundsInput: document.getElementById('roundsInput'),
@@ -282,9 +319,17 @@
       if (!raw) return { ...defaultState, presets: [...builtInPresets] };
       const parsed = JSON.parse(raw);
       return {
-        ...defaultState,
-        ...parsed,
-        setup: { ...defaultState.setup, ...(parsed.setup || {}) },
+        ...(() => {
+          const mergedSetup = { ...defaultState.setup, ...(parsed.setup || {}) };
+          if (!mergedSetup.entryMode) {
+            mergedSetup.entryMode = mergedSetup.mode === 'Kickboxing' ? 'Muay Thai' : mergedSetup.mode;
+          }
+          return {
+            ...defaultState,
+            ...parsed,
+            setup: mergedSetup,
+          };
+        })(),
         preferences: { ...defaultState.preferences, ...(parsed.preferences || {}) },
         presets: mergePresets(parsed.presets || []),
         history: Array.isArray(parsed.history) ? parsed.history : [],
@@ -340,9 +385,10 @@
   }
 
   function renderSegments() {
-    createSegmentButtons(els.typeSegment, segmentDefinitions.mode, 'mode');
+    createSegmentButtons(els.typeSegment, segmentDefinitions.mode, 'mode', (item) => (item === 'Kickboxing' ? 'Muay Thai' : item));
     createSegmentButtons(els.difficultySegment, segmentDefinitions.difficulty, 'difficulty');
     createSegmentButtons(els.styleSegment, segmentDefinitions.comboStyle, 'comboStyle');
+    createSegmentButtons(els.coachSegment, segmentDefinitions.coachPersonality, 'coachPersonality');
     createSegmentButtons(els.frequencySegment, segmentDefinitions.calloutFrequency, 'calloutFrequency');
     createSegmentButtons(els.voiceSegment, coachVoicePresets, 'voicePreset', (item) => item.label);
   }
@@ -357,6 +403,9 @@
 
   function updateSetupValue(key, value) {
     runtime.state.setup[key] = value;
+    if (key === 'mode') {
+      runtime.state.setup.entryMode = value === 'Kickboxing' ? 'Muay Thai' : value;
+    }
     updateSegmentSelection();
     saveState();
   }
@@ -423,11 +472,25 @@
     return voice ? voice.voiceURI : '';
   }
 
+  function pickPreferredVoice(voices) {
+    const priorities = [
+      (voice) => /en-us/i.test(voice.lang) && /(david|guy|roger|jason|mark|tony|samantha|allison)/i.test(voice.name),
+      (voice) => /en-us/i.test(voice.lang) && /(microsoft|natural|enhanced|premium)/i.test(voice.name),
+      (voice) => /en-us/i.test(voice.lang),
+      (voice) => /en/i.test(voice.lang),
+    ];
+    for (const matcher of priorities) {
+      const match = voices.find(matcher);
+      if (match) return match;
+    }
+    return voices[0];
+  }
+
   function loadVoices() {
     if (!('speechSynthesis' in window)) return;
     runtime.voices = window.speechSynthesis.getVoices().filter((voice) => voice.lang.toLowerCase().startsWith('en'));
     if (!runtime.state.preferences.selectedVoiceURI && runtime.voices.length > 0) {
-      const preferred = runtime.voices.find((voice) => /en-us/i.test(voice.lang)) || runtime.voices[0];
+      const preferred = pickPreferredVoice(runtime.voices);
       runtime.state.preferences.selectedVoiceURI = preferred.voiceURI;
       saveState();
     }
@@ -456,7 +519,7 @@
     }
     utterance.rate = runtime.state.preferences.speechRate;
     utterance.volume = 1;
-    utterance.pitch = 0.9;
+    utterance.pitch = 0.78;
     if (priority !== 'queue') window.speechSynthesis.cancel();
     window.speechSynthesis.speak(utterance);
   }
@@ -640,6 +703,7 @@
       lastCombo: '',
       currentCombo: '',
       nextCombo: '',
+      singleCallout: true,
     };
     runtime.warningTriggered = false;
     showScreen('live');
@@ -665,12 +729,11 @@
       if (runtime.state.preferences.vibrateOnStart) vibrate([40, 40, 60]);
       const combo = generateCombo(session.lastCombo);
       session.currentCombo = combo.join(', ');
-      session.nextCombo = generateCombo(session.currentCombo).join(', ');
+      session.nextCombo = '';
       session.lastCombo = session.currentCombo;
       session.combosCalled += 1;
       updateLiveCombo(true);
       speakCallout(session.currentCombo);
-      scheduleCombo();
     } else {
       document.querySelector('[data-screen="live"]').classList.remove('working');
       document.querySelector('[data-screen="live"]').classList.add('resting');
@@ -719,7 +782,7 @@
 
   function scheduleCombo() {
     const session = runtime.currentSession;
-    if (!session || session.phase !== 'work') return;
+    if (!session || session.phase !== 'work' || session.singleCallout) return;
     const range = frequencyRange();
     const seconds = range[0] === range[1] ? range[0] : range[0] + Math.random() * (range[1] - range[0]);
     runtime.comboTimer = window.setTimeout(() => {
@@ -736,8 +799,34 @@
 
   function speakCallout(comboText) {
     const leadIn = getLeadIn();
-    const phrase = leadIn ? `${leadIn} ${comboText}` : comboText;
+    const phrase = formatCoachCallout(comboText, leadIn);
     speak(phrase);
+  }
+
+  function formatCoachCallout(comboText, leadIn) {
+    const replacements = {
+      'lead hook': 'left hook',
+      'rear hook': 'right hook',
+      'lead uppercut': 'left uppercut',
+      'rear uppercut': 'right uppercut',
+      'lead low kick': 'left low kick',
+      'rear low kick': 'right low kick',
+      'lead body kick': 'left body kick',
+      'rear body kick': 'right body kick',
+      'lead head kick': 'left head kick',
+      'rear head kick': 'right head kick',
+      'lead knee': 'left knee',
+      'rear knee': 'right knee',
+      'lead teep': 'left teep',
+      'rear teep': 'right teep',
+    };
+    const actions = comboText
+      .split(',')
+      .map((part) => part.trim().toLowerCase())
+      .filter(Boolean)
+      .map((part) => replacements[part] || part);
+    const body = actions.map((action) => action.charAt(0).toUpperCase() + action.slice(1)).join('. ');
+    return leadIn ? `${leadIn} ${body}.` : `${body}.`;
   }
 
   function updateLiveCombo(initial) {
@@ -747,8 +836,8 @@
     els.restCard.classList.add('hidden');
     els.comboTag.textContent = describeComboStyle();
     els.comboText.textContent = session.currentCombo;
-    els.comboPreview.textContent = `Up next: ${session.nextCombo}`;
-    els.liveStatusText.textContent = initial ? 'Open sharp' : 'Stay on the call';
+    els.comboPreview.textContent = 'Hold this combo for the round';
+    els.liveStatusText.textContent = initial ? 'One call. Work it clean.' : 'Stay on the call';
   }
 
   function renderLiveFrame() {
@@ -757,7 +846,7 @@
     els.liveRoundLabel.textContent = `Round ${session.round} / ${session.rounds}`;
     els.livePhase.textContent = session.phase === 'work' ? 'WORK' : 'REST';
     els.livePhase.className = `phase-pill ${session.phase === 'work' ? '' : 'rest'}`.trim();
-    els.liveModeLabel.textContent = session.mode.toUpperCase();
+    els.liveModeLabel.textContent = (session.entryMode || session.mode).toUpperCase();
     els.liveTimer.textContent = formatClock(session.timeRemaining);
     const phaseLength = session.phase === 'work' ? session.workDuration : session.restDuration;
     updateRing(Math.max(0, 1 - session.timeRemaining / phaseLength));
@@ -778,7 +867,6 @@
     runtime.phaseEndTime = Date.now() + runtime.currentSession.timeRemaining * 1000;
     runtime.phaseTimer = window.setInterval(tickPhase, 250);
     if (runtime.currentSession.phase === 'work') {
-      scheduleCombo();
       speakCallout(runtime.currentSession.currentCombo);
     }
   }
@@ -809,7 +897,7 @@
     const totalTime = session.totalDuration;
     const record = {
       date: new Date().toLocaleString(),
-      mode: session.mode,
+      mode: session.entryMode || session.mode,
       rounds: session.rounds,
       durationSeconds: totalTime,
       combosCalled: session.combosCalled,
@@ -819,7 +907,7 @@
     els.completeRounds.textContent = String(session.rounds);
     els.completeTime.textContent = formatSessionDuration(totalTime);
     els.completeCombos.textContent = String(session.combosCalled);
-    els.completeMode.textContent = session.mode;
+    els.completeMode.textContent = session.entryMode || session.mode;
     els.completeFlavor.textContent = flavorLines[Math.floor(Math.random() * flavorLines.length)];
     runtime.currentSession = null;
     showScreen('complete');
@@ -830,7 +918,8 @@
     const setup = runtime.state.setup;
     const preset = {
       id: `custom-${Date.now()}`,
-      name: `${setup.rounds} Round ${setup.mode} ${setup.comboStyle}`,
+      name: `${setup.rounds} Round ${setup.entryMode || setup.mode} ${setup.comboStyle}`,
+      entryMode: setup.entryMode || setup.mode,
       mode: setup.mode,
       rounds: setup.rounds,
       workDuration: setup.workDuration,
@@ -851,6 +940,7 @@
     if (!preset) return;
     runtime.state.setup = {
       ...runtime.state.setup,
+      entryMode: preset.entryMode || (preset.mode === 'Kickboxing' ? 'Muay Thai' : preset.mode),
       mode: preset.mode,
       rounds: preset.rounds,
       workDuration: preset.workDuration,
@@ -863,6 +953,18 @@
     saveState();
     renderSetupForm();
     showScreen('setup');
+  }
+
+  function launchQuickMode(modeKey) {
+    const config = quickLaunchModes[modeKey];
+    if (!config) return;
+    runtime.state.setup = {
+      ...runtime.state.setup,
+      ...config,
+    };
+    saveState();
+    renderSetupForm();
+    startCountdown();
   }
 
   function deletePreset(id) {
@@ -884,7 +986,7 @@
             <div class="preset-meta">
               <span class="pill">${preset.rounds} rounds</span>
               <span class="pill">${formatClock(preset.workDuration)} / ${formatClock(preset.restDuration)}</span>
-              <span class="pill">${preset.mode}</span>
+              <span class="pill">${preset.entryMode || (preset.mode === 'Kickboxing' ? 'Muay Thai' : preset.mode)}</span>
               <span class="pill">${preset.difficulty}</span>
               <span class="pill">${preset.calloutFrequency}</span>
             </div>
@@ -994,6 +1096,7 @@
     document.querySelectorAll('[data-action]').forEach((button) => {
       button.addEventListener('click', () => {
         const action = button.dataset.action;
+        if (action === 'launch-mode') return launchQuickMode(button.dataset.launchMode);
         if (action === 'start-session') return showScreen('setup');
         if (action === 'quick-start') return startCountdown();
         if (action === 'begin-countdown') return startCountdown();
