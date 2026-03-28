@@ -85,6 +85,7 @@
       mode: 'Boxing',
       stance: 'Orthodox',
       allowSwitchStance: false,
+      attackMode: true,
       comboStyle: 'Balanced',
       difficulty: 'Intermediate',
       coachPersonality: 'Coach',
@@ -97,6 +98,7 @@
       mode: 'Kickboxing',
       stance: 'Orthodox',
       allowSwitchStance: false,
+      attackMode: true,
       comboStyle: 'Balanced',
       difficulty: 'Intermediate',
       coachPersonality: 'Coach',
@@ -109,6 +111,7 @@
       mode: 'Kickboxing',
       stance: 'Orthodox',
       allowSwitchStance: true,
+      attackMode: true,
       comboStyle: 'Freestyle',
       difficulty: 'Advanced',
       coachPersonality: 'Aggressive',
@@ -121,6 +124,7 @@
       mode: 'Boxing',
       stance: 'Orthodox',
       allowSwitchStance: false,
+      attackMode: true,
       comboStyle: 'Pressure',
       difficulty: 'Beginner',
       coachPersonality: 'Aggressive',
@@ -1370,8 +1374,8 @@
     let startDelay;
     let attackLength;
 
-    if (session.round === 1 && session.workDuration >= 60) {
-      startDelay = session.workDuration - 60;
+    if (session.round === 1 && session.workDuration >= 30) {
+      startDelay = 30;
       attackLength = 10;
     } else {
       if (Math.random() > 0.42) return;
