@@ -137,6 +137,149 @@
     Mixed: ['Sit ups', 'High knees', 'Russian twists', 'Sumo squats'],
   };
 
+  const careerUnlocks = [
+    {
+      id: 'amateur-fundamentals',
+      name: 'Amateur Fundamentals',
+      description: 'Jab, cross, lead hook, rear hook, and the basic heavy bag frame.',
+      requirementText: 'Unlocked at the start',
+      sessions: 0,
+      moves: ['jab', 'cross', 'lead hook', 'rear hook', 'double jab'],
+    },
+    {
+      id: 'uppercut-lab',
+      name: 'Uppercut Lab',
+      description: 'Start ripping short uppercuts into your bag work.',
+      requirementText: 'Complete 2 sessions',
+      sessions: 2,
+      moves: ['lead uppercut', 'rear uppercut'],
+    },
+    {
+      id: 'head-movement',
+      name: 'Head Movement',
+      description: 'Slip, roll, and pull back before you fire back.',
+      requirementText: 'Complete 4 sessions',
+      sessions: 4,
+      moves: ['slip left', 'slip right', 'roll', 'pull back'],
+    },
+    {
+      id: 'angle-footwork',
+      name: 'Angle Footwork',
+      description: 'Add pivots, resets, and stance switches to the bag.',
+      requirementText: 'Complete 6 sessions',
+      sessions: 6,
+      moves: ['pivot left', 'pivot right', 'reset', 'switch stance'],
+    },
+    {
+      id: 'muay-entries',
+      name: 'Muay Entries',
+      description: 'Teeps, knees, and checks enter the career path.',
+      requirementText: 'Complete 8 sessions',
+      sessions: 8,
+      moves: ['lead teep', 'rear teep', 'lead knee', 'rear knee', 'check'],
+    },
+    {
+      id: 'kick-forge',
+      name: 'Kick Forge',
+      description: 'Unlock low kicks and body kicks without leaving the heavy bag.',
+      requirementText: 'Complete 10 sessions',
+      sessions: 10,
+      moves: ['lead low kick', 'rear low kick', 'lead body kick', 'rear body kick'],
+    },
+    {
+      id: 'elbow-foundry',
+      name: 'Elbow Foundry',
+      description: 'Short elbows and switch attacks for close-range bag work.',
+      requirementText: 'Complete 12 sessions',
+      sessions: 12,
+      moves: ['lead elbow', 'rear elbow', 'switch knee', 'switch kick'],
+    },
+    {
+      id: 'high-line-finishes',
+      name: 'High Line Finishes',
+      description: 'Controlled head kicks and high exits join the mix.',
+      requirementText: 'Complete 15 sessions',
+      sessions: 15,
+      moves: ['lead head kick', 'rear head kick'],
+    },
+    {
+      id: 'jeet-kune-do',
+      name: 'Jeet Kune Do Bonus',
+      description: 'Consistency unlocks intercepting bag work and stop-hit tools.',
+      requirementText: 'Hit a 5 day streak',
+      streak: 5,
+      moves: ['intercepting straight', 'stop kick', 'shuffle step', 'straight blast'],
+    },
+  ];
+
+  const careerChapters = [
+    {
+      id: 'amateur-boxer',
+      minSessions: 0,
+      title: 'Amateur Boxer',
+      subtitle: 'Clean hands, rhythm, and balance. Build the engine before the tricks.',
+      entryMode: 'Boxing',
+      mode: 'Boxing',
+      difficulty: 'Beginner',
+      comboStyle: 'Balanced',
+      rounds: 6,
+      workDuration: 90,
+      restDuration: 30,
+    },
+    {
+      id: 'counter-apprentice',
+      minSessions: 4,
+      title: 'Counter Apprentice',
+      subtitle: 'You have the basics. Now move the head and punish the return.',
+      entryMode: 'Boxing',
+      mode: 'Boxing',
+      difficulty: 'Intermediate',
+      comboStyle: 'Counter',
+      rounds: 8,
+      workDuration: 120,
+      restDuration: 30,
+    },
+    {
+      id: 'muay-initiate',
+      minSessions: 8,
+      title: 'Muay Initiate',
+      subtitle: 'The bag starts teaching knees, teeps, and checks.',
+      entryMode: 'Muay Thai',
+      mode: 'Kickboxing',
+      difficulty: 'Intermediate',
+      comboStyle: 'Balanced',
+      rounds: 8,
+      workDuration: 120,
+      restDuration: 40,
+    },
+    {
+      id: 'mma-prospect',
+      minSessions: 12,
+      title: 'MMA Prospect',
+      subtitle: 'Hands, kicks, elbows, and stance shifts start flowing together.',
+      entryMode: 'Chaos',
+      mode: 'Kickboxing',
+      difficulty: 'Advanced',
+      comboStyle: 'Freestyle',
+      rounds: 8,
+      workDuration: 120,
+      restDuration: 35,
+    },
+    {
+      id: 'matrix-disciple',
+      minSessions: 16,
+      title: 'Matrix Disciple',
+      subtitle: 'You are plugged in now. Intercepts, chaos, and pressure stay heavy-bag safe.',
+      entryMode: 'Chaos',
+      mode: 'Kickboxing',
+      difficulty: 'Advanced',
+      comboStyle: 'Pressure',
+      rounds: 10,
+      workDuration: 120,
+      restDuration: 30,
+    },
+  ];
+
   const flavorLines = ['Sharp work.', 'Good engine.', 'You stayed in it.', 'That was clean.', 'Solid round management.'];
   const restLines = ['Breathe', 'Reset', 'Hands up', 'Next round coming'];
   const voiceLeadIns = {
@@ -153,34 +296,47 @@
         ['double jab', 'cross'],
         ['jab', 'rear uppercut', 'lead hook'],
         ['jab', 'cross', 'roll'],
+        ['jab', 'cross', 'rear hook'],
+        ['jab', 'lead hook', 'cross'],
+        ['double jab', 'cross', 'pivot left'],
       ],
       Pressure: [
         ['double jab', 'cross', 'lead hook'],
         ['jab', 'cross', 'lead hook', 'cross'],
         ['jab', 'cross', 'lead hook', 'rear uppercut'],
         ['jab', 'jab', 'cross', 'lead hook'],
+        ['double jab', 'cross', 'rear hook', 'lead hook'],
+        ['jab', 'cross', 'lead uppercut', 'rear hook'],
       ],
       Counter: [
         ['slip left', 'cross', 'lead hook'],
         ['pull back', 'cross', 'lead hook'],
         ['roll', 'cross', 'lead hook'],
         ['slip right', 'cross', 'lead hook'],
+        ['slip left', 'cross', 'rear hook'],
+        ['pull back', 'jab', 'cross'],
       ],
       Defense: [
         ['jab', 'cross', 'pivot left'],
         ['jab', 'cross', 'roll'],
         ['slip left', 'cross'],
         ['jab', 'pull back', 'cross'],
+        ['double jab', 'pivot right'],
+        ['slip right', 'lead hook', 'pivot left'],
       ],
       'Body shots': [
         ['jab', 'cross', 'lead hook to body'],
         ['lead hook to body', 'lead hook to head'],
         ['cross', 'lead hook to body', 'cross'],
+        ['double jab', 'rear uppercut', 'lead hook to body'],
+        ['jab', 'lead hook to body', 'rear hook'],
       ],
       Freestyle: [
         ['jab', 'cross', 'lead hook'],
         ['slip left', 'cross', 'lead hook'],
         ['lead uppercut', 'rear uppercut', 'lead hook'],
+        ['jab', 'cross', 'rear hook', 'pivot left'],
+        ['slip right', 'cross', 'lead uppercut'],
       ],
     },
     Kickboxing: {
@@ -189,38 +345,68 @@
         ['lead teep', 'cross'],
         ['jab', 'cross', 'rear body kick'],
         ['jab', 'cross', 'rear knee'],
+        ['jab', 'lead hook', 'rear low kick'],
+        ['lead teep', 'jab', 'cross'],
+        ['jab', 'cross', 'switch knee'],
       ],
       Pressure: [
         ['jab', 'cross', 'lead hook', 'rear low kick'],
         ['lead teep', 'jab', 'cross', 'rear body kick'],
         ['jab', 'cross', 'lead hook', 'rear knee'],
+        ['jab', 'cross', 'rear elbow', 'rear low kick'],
+        ['lead teep', 'cross', 'lead hook', 'switch kick'],
       ],
       Counter: [
         ['slip left', 'cross', 'rear low kick'],
         ['pull back', 'cross', 'rear body kick'],
         ['slip right', 'cross', 'lead hook', 'rear body kick'],
+        ['check', 'cross', 'lead hook'],
+        ['pull back', 'rear knee', 'rear body kick'],
       ],
       Defense: [
         ['lead teep', 'reset'],
         ['jab', 'cross', 'pivot left'],
         ['check', 'cross', 'rear low kick'],
+        ['lead teep', 'pivot right'],
+        ['check', 'cross', 'switch kick'],
       ],
       'Body shots': [
         ['jab', 'cross', 'rear body kick'],
         ['lead hook to body', 'rear low kick'],
         ['cross', 'lead hook to body', 'rear knee'],
+        ['jab', 'rear elbow', 'lead body kick'],
+        ['lead hook to body', 'switch knee'],
       ],
       Freestyle: [
         ['jab', 'cross', 'rear low kick'],
         ['lead teep', 'cross', 'lead hook'],
         ['jab', 'cross', 'rear head kick'],
+        ['intercepting straight', 'rear low kick'],
+        ['shuffle step', 'straight blast', 'rear knee'],
+        ['jab', 'cross', 'rear elbow', 'switch kick'],
       ],
     },
   };
 
-  const offenseMoves = ['jab', 'cross', 'lead hook', 'rear hook', 'lead uppercut', 'rear uppercut'];
-  const kickMoves = ['lead teep', 'rear teep', 'lead low kick', 'rear low kick', 'rear body kick', 'lead body kick', 'rear knee', 'lead knee'];
-  const defensiveMoves = ['slip left', 'slip right', 'roll', 'pull back', 'pivot left', 'pivot right', 'reset', 'check'];
+  const bodyAttackMoves = ['lead hook to body'];
+  const offenseMoves = ['jab', 'cross', 'lead hook', 'rear hook', 'lead uppercut', 'rear uppercut', 'double jab'];
+  const kickMoves = [
+    'lead teep',
+    'rear teep',
+    'lead low kick',
+    'rear low kick',
+    'rear body kick',
+    'lead body kick',
+    'rear head kick',
+    'lead head kick',
+    'rear knee',
+    'lead knee',
+    'switch knee',
+    'switch kick',
+    'lead elbow',
+    'rear elbow',
+  ];
+  const defensiveMoves = ['slip left', 'slip right', 'roll', 'pull back', 'pivot left', 'pivot right', 'reset', 'check', 'switch stance', 'shuffle step'];
 
   const defaultState = {
     screen: 'home',
@@ -228,6 +414,7 @@
     setup: {
       entryMode: 'Boxing',
       mode: 'Boxing',
+      careerMode: false,
       rounds: 8,
       workDuration: 120,
       restDuration: 30,
@@ -256,6 +443,14 @@
     },
     presets: [],
     history: [],
+    career: {
+      fighterName: 'Bag Disciple',
+      sessionsCompleted: 0,
+      streakDays: 0,
+      bestStreak: 0,
+      xp: 0,
+      lastSessionDate: '',
+    },
   };
 
   const runtime = {
@@ -280,6 +475,20 @@
   function cacheElements() {
     return {
       screens: Array.from(document.querySelectorAll('.screen')),
+      homeBackButton: document.getElementById('homeBackButton'),
+      careerHomeSummary: document.getElementById('careerHomeSummary'),
+      careerNameInput: document.getElementById('careerNameInput'),
+      careerRank: document.getElementById('careerRank'),
+      careerChapter: document.getElementById('careerChapter'),
+      careerXp: document.getElementById('careerXp'),
+      careerLevelBadge: document.getElementById('careerLevelBadge'),
+      careerSessions: document.getElementById('careerSessions'),
+      careerStreak: document.getElementById('careerStreak'),
+      careerTechniques: document.getElementById('careerTechniques'),
+      careerDiscipline: document.getElementById('careerDiscipline'),
+      careerNextUnlock: document.getElementById('careerNextUnlock'),
+      careerTechniqueList: document.getElementById('careerTechniqueList'),
+      careerLockedList: document.getElementById('careerLockedList'),
       typeSegment: document.getElementById('typeSegment'),
       difficultySegment: document.getElementById('difficultySegment'),
       styleSegment: document.getElementById('styleSegment'),
@@ -369,6 +578,7 @@
             ...defaultState,
             ...parsed,
             setup: mergedSetup,
+            career: { ...defaultState.career, ...(parsed.career || {}) },
           };
         })(),
         preferences: { ...defaultState.preferences, ...(parsed.preferences || {}) },
@@ -409,6 +619,52 @@
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${String(secs).padStart(2, '0')}`;
+  }
+
+  function getDateKey(date = new Date()) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  function daysBetween(dateKeyA, dateKeyB) {
+    if (!dateKeyA || !dateKeyB) return null;
+    const a = new Date(`${dateKeyA}T00:00:00`);
+    const b = new Date(`${dateKeyB}T00:00:00`);
+    return Math.round((b - a) / 86400000);
+  }
+
+  function getCareerProgress(career = runtime.state.career) {
+    const unlocked = careerUnlocks.filter(
+      (item) => career.sessionsCompleted >= (item.sessions || 0) && career.streakDays >= (item.streak || 0),
+    );
+    const locked = careerUnlocks.filter((item) => !unlocked.includes(item));
+    const chapter = [...careerChapters].reverse().find((item) => career.sessionsCompleted >= item.minSessions) || careerChapters[0];
+    const level = Math.max(1, 1 + Math.floor(career.xp / 300));
+    return { unlocked, locked, chapter, level };
+  }
+
+  function getCareerAllowedMoves(career = runtime.state.career) {
+    const { unlocked } = getCareerProgress(career);
+    return new Set(unlocked.flatMap((item) => item.moves));
+  }
+
+  function currentAllowedMoves() {
+    if (runtime.currentSession) {
+      return runtime.currentSession.careerMode ? getCareerAllowedMoves() : null;
+    }
+    if (!runtime.state.setup.careerMode) return null;
+    return getCareerAllowedMoves();
+  }
+
+  function describeRequirement(unlock) {
+    return unlock.requirementText || 'Keep training';
+  }
+
+  function updateHomeBackButton() {
+    const canGoBack = runtime.state.previousScreen && runtime.state.previousScreen !== 'home';
+    els.homeBackButton.classList.toggle('hidden', !canGoBack);
   }
 
   function createSegmentButtons(container, items, key, mapper) {
@@ -458,6 +714,9 @@
 
   function updateSetupValue(key, value) {
     runtime.state.setup[key] = value;
+    if (key !== 'careerMode') {
+      runtime.state.setup.careerMode = false;
+    }
     if (key === 'mode') {
       runtime.state.setup.entryMode = value === 'Kickboxing' ? 'Muay Thai' : value;
     }
@@ -493,6 +752,7 @@
       selected.add(category);
     }
     runtime.state.setup.recoveryCategories = Array.from(selected);
+    runtime.state.setup.careerMode = false;
     updateRecoveryCategorySelection();
     saveState();
   }
@@ -515,15 +775,64 @@
     els.soundToggle.textContent = prefs.muted ? '🔇' : '🔊';
   }
 
+  function renderCareerSummary() {
+    const career = runtime.state.career;
+    const progress = getCareerProgress(career);
+    const nextUnlock = progress.locked[0];
+    els.careerNameInput.value = career.fighterName || 'Bag Disciple';
+    els.careerRank.textContent = progress.chapter.title;
+    els.careerChapter.textContent = progress.chapter.subtitle;
+    els.careerXp.textContent = `${career.xp} XP`;
+    els.careerLevelBadge.textContent = `Level ${progress.level}`;
+    els.careerSessions.textContent = String(career.sessionsCompleted);
+    els.careerStreak.textContent = String(career.streakDays);
+    els.careerTechniques.textContent = String(progress.unlocked.length);
+    els.careerDiscipline.textContent = progress.chapter.entryMode;
+    els.careerNextUnlock.textContent = nextUnlock
+      ? `${nextUnlock.name}: ${describeRequirement(nextUnlock)}. ${nextUnlock.description}`
+      : 'Full arsenal unlocked. Keep the streak alive for mastery.';
+    els.careerHomeSummary.textContent = `${career.fighterName || 'Bag Disciple'} | ${progress.chapter.title} | ${career.streakDays} day streak`;
+    els.careerTechniqueList.innerHTML = progress.unlocked
+      .map(
+        (item) => `
+          <article class="technique-chip unlocked">
+            <strong>${item.name}</strong>
+            <span>${item.description}</span>
+          </article>
+        `,
+      )
+      .join('');
+    els.careerLockedList.innerHTML = progress.locked.length
+      ? progress.locked
+          .slice(0, 4)
+          .map(
+            (item) => `
+              <article class="technique-chip locked">
+                <strong>${item.name}</strong>
+                <span>${describeRequirement(item)}</span>
+              </article>
+            `,
+          )
+          .join('')
+      : '<article class="technique-chip unlocked"><strong>Mastered</strong><span>The full heavy bag skill tree is open.</span></article>';
+  }
+
   function showScreen(name) {
+    const previous = runtime.state.screen;
+    if (previous && previous !== name) {
+      runtime.state.previousScreen = previous;
+    }
     runtime.state.screen = name;
     els.screens.forEach((screen) => {
       screen.classList.toggle('screen-active', screen.dataset.screen === name);
     });
     saveState();
+    updateHomeBackButton();
+    renderCareerSummary();
     if (name === 'history') renderHistory();
     if (name === 'presets') renderPresets();
     if (name === 'settings') renderPreferences();
+    if (name === 'career') renderCareerSummary();
   }
 
   function goToScreen(name, options) {
@@ -537,6 +846,7 @@
     runtime.state.setup.rounds = clampNumber(els.roundsInput.value, 1, 20);
     runtime.state.setup.workDuration = clampNumber(els.workInput.value, 10, 600);
     runtime.state.setup.restDuration = clampNumber(els.restInput.value, 5, 180);
+    runtime.state.setup.careerMode = false;
     els.roundsInput.value = runtime.state.setup.rounds;
     els.workInput.value = runtime.state.setup.workDuration;
     els.restInput.value = runtime.state.setup.restDuration;
@@ -731,7 +1041,11 @@
   function familyPool() {
     const mode = runtime.state.setup.mode;
     const style = runtime.state.setup.comboStyle;
-    return comboFamilies[mode][style] || comboFamilies[mode].Balanced;
+    const basePool = comboFamilies[mode][style] || comboFamilies[mode].Balanced;
+    const allowedMoves = currentAllowedMoves();
+    if (!allowedMoves) return basePool;
+    const filtered = basePool.filter((combo) => combo.every((move) => allowedMoves.has(move) || bodyAttackMoves.includes(move)));
+    return filtered.length ? filtered : comboFamilies[mode].Balanced.filter((combo) => combo.every((move) => allowedMoves.has(move) || bodyAttackMoves.includes(move)));
   }
 
   function frequencyRange() {
@@ -780,19 +1094,26 @@
   function buildProceduralCombos(maxLength) {
     const mode = runtime.state.setup.mode;
     const style = runtime.state.setup.comboStyle;
-    const attackPool = mode === 'Kickboxing' ? [...offenseMoves, ...kickMoves] : [...offenseMoves];
+    const allowedMoves = currentAllowedMoves();
+    const defaultAttackPool = mode === 'Kickboxing' ? [...offenseMoves, ...kickMoves, ...bodyAttackMoves] : [...offenseMoves, ...bodyAttackMoves];
+    const defaultDefensePool = [...defensiveMoves];
+    const attackPool = allowedMoves
+      ? defaultAttackPool.filter((move) => allowedMoves.has(move) || bodyAttackMoves.includes(move))
+      : defaultAttackPool;
+    const defensePool = allowedMoves ? defaultDefensePool.filter((move) => allowedMoves.has(move)) : defaultDefensePool;
+    if (attackPool.length < 2) return [];
     const combos = [];
     for (let i = 0; i < 4; i += 1) {
       const combo = [];
       combo.push(attackPool[Math.floor(Math.random() * attackPool.length)]);
       combo.push(attackPool[Math.floor(Math.random() * attackPool.length)]);
-      if (style === 'Counter' || style === 'Defense') {
-        combo.unshift(defensiveMoves[Math.floor(Math.random() * 4)]);
+      if ((style === 'Counter' || style === 'Defense') && defensePool.length) {
+        combo.unshift(defensePool[Math.floor(Math.random() * Math.min(defensePool.length, 4))]);
       }
       if (style === 'Pressure' || style === 'Body shots') {
         combo.push(attackPool[Math.floor(Math.random() * attackPool.length)]);
-      } else if (Math.random() > 0.5) {
-        combo.push(defensiveMoves[Math.floor(Math.random() * defensiveMoves.length)]);
+      } else if (Math.random() > 0.5 && defensePool.length) {
+        combo.push(defensePool[Math.floor(Math.random() * defensePool.length)]);
       }
       combos.push(combo.slice(0, maxLength));
     }
@@ -802,11 +1123,12 @@
   function generateCombo(previous) {
     const pool = shuffle(familyPool());
     const maxLength = difficultyLength();
-    const candidates = pool
+    const fallbackPool = pool.length ? pool : buildProceduralCombos(maxLength);
+    const candidates = fallbackPool
       .map((combo) => combo.slice(0, Math.min(combo.length, maxLength)))
       .concat(buildProceduralCombos(maxLength))
       .filter((combo) => combo.join(', ') !== previous);
-    return candidates[0] || pool[0];
+    return candidates[0] || fallbackPool[0] || ['jab', 'cross'];
   }
 
   function describeComboStyle() {
@@ -912,6 +1234,7 @@
     runtime.warningTriggered = false;
     document.body.classList.remove('finish-him-state');
     document.body.classList.remove('attack-mode-state');
+    document.body.classList.remove('attack-pulse');
     const session = runtime.currentSession;
     if (!session) return;
     session.phase = phase;
@@ -1003,6 +1326,7 @@
     session.attackRemaining = 0;
     session.attackEndsAt = 0;
     document.body.classList.remove('attack-mode-state');
+    document.body.classList.remove('attack-pulse');
     updateLiveCombo();
     renderLiveFrame();
   }
@@ -1078,6 +1402,16 @@
       'rear knee': 'right knee',
       'lead teep': 'left teep',
       'rear teep': 'right teep',
+      'lead elbow': 'left elbow',
+      'rear elbow': 'right elbow',
+      'lead hook to body': 'left hook body',
+      'switch kick': 'switch kick',
+      'switch knee': 'switch knee',
+      'switch stance': 'switch stance',
+      'intercepting straight': 'intercepting straight',
+      'stop kick': 'stop kick',
+      'shuffle step': 'shuffle step',
+      'straight blast': 'straight blast',
     };
     const actions = comboText
       .split(',')
@@ -1161,6 +1495,7 @@
     document.body.classList.remove('warning-state');
     document.body.classList.remove('finish-him-state');
     document.body.classList.remove('attack-mode-state');
+    document.body.classList.remove('attack-pulse');
     els.pauseOverlay.classList.add('hidden');
     showScreen('home');
   }
@@ -1184,8 +1519,12 @@
       rounds: session.rounds,
       durationSeconds: totalTime,
       combosCalled: session.combosCalled,
+      careerMode: Boolean(session.careerMode),
     };
     runtime.state.history = [record, ...runtime.state.history].slice(0, HISTORY_LIMIT);
+    if (session.careerMode) {
+      awardCareerProgress(session);
+    }
     saveState();
     els.completeRounds.textContent = String(session.rounds);
     els.completeTime.textContent = formatSessionDuration(totalTime);
@@ -1231,6 +1570,7 @@
       rounds: preset.rounds,
       workDuration: preset.workDuration,
       restDuration: preset.restDuration,
+      careerMode: false,
       activeRecovery: Boolean(preset.activeRecovery),
       recoveryCategories: preset.recoveryCategories || ['Mixed'],
       attackMode: Boolean(preset.attackMode),
@@ -1250,10 +1590,61 @@
     runtime.state.setup = {
       ...runtime.state.setup,
       ...config,
+      careerMode: false,
     };
     saveState();
     renderSetupForm();
     startCountdown();
+  }
+
+  function startCareerSession() {
+    const progress = getCareerProgress();
+    runtime.state.setup = {
+      ...runtime.state.setup,
+      careerMode: true,
+      entryMode: progress.chapter.entryMode,
+      mode: progress.chapter.mode,
+      rounds: progress.chapter.rounds,
+      workDuration: progress.chapter.workDuration,
+      restDuration: progress.chapter.restDuration,
+      difficulty: progress.chapter.difficulty,
+      comboStyle: progress.chapter.comboStyle,
+      coachPersonality: progress.chapter.entryMode === 'Chaos' ? 'Aggressive' : 'Coach',
+      calloutFrequency: progress.chapter.entryMode === 'Boxing' ? 'Every 7 sec' : 'Random',
+      attackMode: progress.chapter.minSessions >= 8,
+      activeRecovery: progress.chapter.minSessions >= 4,
+      recoveryCategories: progress.chapter.minSessions >= 8 ? ['Core', 'Conditioning'] : ['Mixed'],
+    };
+    saveState();
+    renderSetupForm();
+    startCountdown();
+  }
+
+  function resetCareerProgress() {
+    runtime.state.career = { ...defaultState.career };
+    runtime.state.setup.careerMode = false;
+    saveState();
+    renderCareerSummary();
+  }
+
+  function awardCareerProgress(session) {
+    const today = getDateKey();
+    const career = runtime.state.career;
+    const previousDate = career.lastSessionDate;
+    const gap = daysBetween(previousDate, today);
+    career.sessionsCompleted += 1;
+    career.xp += 100 + session.rounds * 12 + session.combosCalled * 6;
+    if (!previousDate || gap === null) {
+      career.streakDays = 1;
+    } else if (gap === 0) {
+      career.streakDays = Math.max(career.streakDays, 1);
+    } else if (gap === 1) {
+      career.streakDays += 1;
+    } else {
+      career.streakDays = 1;
+    }
+    career.bestStreak = Math.max(career.bestStreak, career.streakDays);
+    career.lastSessionDate = today;
   }
 
   function deletePreset(id) {
@@ -1311,6 +1702,7 @@
                   <span class="pill">${item.mode}</span>
                   <span class="pill">${item.rounds} rounds</span>
                   <span class="pill">${formatSessionDuration(item.durationSeconds)}</span>
+                  ${item.careerMode ? '<span class="pill">Career</span>' : ''}
                 </div>
               </article>
             `,
@@ -1352,6 +1744,7 @@
     };
     saveState();
     renderSetupForm();
+    renderCareerSummary();
     renderPreferences();
     renderPresets();
     renderHistory();
@@ -1379,6 +1772,10 @@
         playButtonGong();
         const target = button.dataset.go;
         const returnScreen = button.dataset.settingsReturn;
+        if (target === 'setup') {
+          runtime.state.setup.careerMode = false;
+          saveState();
+        }
         goToScreen(target, returnScreen ? { returnScreen } : undefined);
       });
     });
@@ -1390,10 +1787,13 @@
           playButtonGong();
         }
         if (action === 'launch-mode') return launchQuickMode(button.dataset.launchMode);
+        if (action === 'go-back') return showScreen(runtime.state.previousScreen || 'home');
         if (action === 'start-session') return showScreen('setup');
+        if (action === 'start-career-session') return startCareerSession();
         if (action === 'quick-start') return startCountdown();
         if (action === 'begin-countdown') return startCountdown();
         if (action === 'save-preset') return savePreset();
+        if (action === 'reset-career') return resetCareerProgress();
         if (action === 'pause-session') return pauseSession();
         if (action === 'resume-session') return resumeSession();
         if (action === 'restart-session') return restartSession();
@@ -1407,14 +1807,25 @@
     els.roundsInput.addEventListener('input', readNumericInputs);
     els.workInput.addEventListener('input', readNumericInputs);
     els.restInput.addEventListener('input', readNumericInputs);
+    els.homeBackButton.addEventListener('click', () => {
+      playButtonGong();
+      showScreen(runtime.state.previousScreen || 'home');
+    });
+    els.careerNameInput.addEventListener('change', () => {
+      runtime.state.career.fighterName = (els.careerNameInput.value || '').trim().slice(0, 24) || 'Bag Disciple';
+      renderCareerSummary();
+      saveState();
+    });
     els.activeRecoveryInput.addEventListener('change', () => {
       playButtonGong();
       runtime.state.setup.activeRecovery = els.activeRecoveryInput.checked;
+      runtime.state.setup.careerMode = false;
       saveState();
     });
     els.attackModeInput.addEventListener('change', () => {
       playButtonGong();
       runtime.state.setup.attackMode = els.attackModeInput.checked;
+      runtime.state.setup.careerMode = false;
       saveState();
     });
 
@@ -1553,9 +1964,11 @@
     }
     renderSegments();
     renderSetupForm();
+    renderCareerSummary();
     renderPresets();
     renderHistory();
     renderPreferences();
+    updateHomeBackButton();
     registerEvents();
     showScreen(runtime.state.screen || 'home');
     loadVoices();

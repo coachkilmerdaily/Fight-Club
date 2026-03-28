@@ -21,7 +21,8 @@
 
       <main class="app-frame">
         <section class="screen screen-active" data-screen="home">
-          <header class="brand-lockup">
+          <header class="brand-lockup brand-lockup-home">
+            <button id="homeBackButton" class="icon-button home-back hidden" type="button" aria-label="Go back">&larr;</button>
             <div class="brand-mark">FC</div>
             <div>
               <p class="eyebrow">Fight Club: Heavybag Drills</p>
@@ -64,12 +65,104 @@
             </button>
           </div>
 
+          <section class="card career-tease">
+            <div>
+              <p class="eyebrow">Career Mode</p>
+              <h3>Be My Fight Coach</h3>
+            </div>
+            <p id="careerHomeSummary" class="muted-chip">Start as an amateur boxer and unlock your arsenal.</p>
+          </section>
+
           <nav class="home-nav">
+            <button class="button button-primary" data-go="career">Career</button>
             <button class="button button-ghost" data-go="setup">Customize</button>
             <button class="button button-ghost" data-go="presets">Presets</button>
             <button class="button button-ghost" data-go="history">History</button>
             <button class="button button-ghost" data-go="settings">Settings</button>
           </nav>
+        </section>
+
+        <section class="screen" data-screen="career">
+          <div class="screen-top">
+            <button class="icon-button" data-go="home" aria-label="Back home">&larr;</button>
+            <div>
+              <p class="eyebrow">Career Mode</p>
+              <h2>Be My Fight Coach</h2>
+            </div>
+          </div>
+
+          <div class="stack">
+            <section class="card">
+              <div class="block-title">
+                <h3>Fighter Profile</h3>
+              </div>
+              <label class="field">
+                <span>Fighter Alias</span>
+                <input id="careerNameInput" type="text" maxlength="24" placeholder="Bag disciple" />
+              </label>
+            </section>
+
+            <section class="card">
+              <div class="block-title">
+                <h3>Current Chapter</h3>
+              </div>
+              <div class="career-header">
+                <div>
+                  <p id="careerRank" class="career-rank">Amateur Boxer</p>
+                  <p id="careerChapter" class="combo-preview">Build clean hands before the rest of the arsenal unlocks.</p>
+                </div>
+                <div class="career-xp">
+                  <strong id="careerXp">0 XP</strong>
+                  <span id="careerLevelBadge" class="pill">Level 1</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="card stats-grid">
+              <article class="stat-card">
+                <span>Sessions</span>
+                <strong id="careerSessions">0</strong>
+              </article>
+              <article class="stat-card">
+                <span>Day Streak</span>
+                <strong id="careerStreak">0</strong>
+              </article>
+              <article class="stat-card">
+                <span>Techniques</span>
+                <strong id="careerTechniques">0</strong>
+              </article>
+              <article class="stat-card">
+                <span>Discipline</span>
+                <strong id="careerDiscipline">Boxing</strong>
+              </article>
+            </section>
+
+            <section class="card">
+              <div class="block-title">
+                <h3>Next Unlock</h3>
+              </div>
+              <p id="careerNextUnlock" class="career-next">Complete more sessions to unlock new bag work.</p>
+            </section>
+
+            <section class="card">
+              <div class="block-title">
+                <h3>Unlocked Techniques</h3>
+              </div>
+              <div id="careerTechniqueList" class="technique-grid"></div>
+            </section>
+
+            <section class="card">
+              <div class="block-title">
+                <h3>Locked Ahead</h3>
+              </div>
+              <div id="careerLockedList" class="technique-grid"></div>
+            </section>
+
+            <div class="cta-stack">
+              <button class="button button-primary button-xl" data-action="start-career-session">Start Career Session</button>
+              <button class="button button-secondary button-xl" data-action="reset-career">Reset Career Progress</button>
+            </div>
+          </div>
         </section>
 
         <section class="screen" data-screen="setup">
