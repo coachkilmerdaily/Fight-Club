@@ -1,24 +1,546 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Life Audit</title>
     <meta
-      name="description"
-      content="Run the audit, see the pattern, and fix what matters with Life Audit."
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
     />
+    <title>Fight Club: Heavybag Drills</title>
+    <meta name="theme-color" content="#07090d" />
+    <meta name="description" content="8-bit fight timer with live heavy bag combo callouts." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet" />
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./icons/icon-192.svg" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <main id="app"></main>
-    <script src="./full-audit-data.js"></script>
-    <script src="./app.js"></script>
+    <div class="app-shell">
+      <div class="ambient ambient-top"></div>
+      <div class="ambient ambient-bottom"></div>
+
+      <main class="app-frame">
+        <section class="screen screen-active" data-screen="home">
+          <header class="brand-lockup brand-lockup-home">
+            <button id="homeBackButton" class="icon-button home-back hidden" type="button" aria-label="Go back">&larr;</button>
+            <div class="brand-mark">FC</div>
+            <div>
+              <p class="eyebrow">Fight Club: Heavybag Drills</p>
+              <h1>Heavy Bag Drills</h1>
+            </div>
+          </header>
+
+          <section class="hero-scene hero-matrix" aria-hidden="true">
+            <div class="matrix-rain">
+              <span class="matrix-column" data-symbols="功力拳氣影龍虎心武"></span>
+              <span class="matrix-column" data-symbols="武道拳腿氣影心火"></span>
+              <span class="matrix-column" data-symbols="龍虎氣功拳影電火"></span>
+              <span class="matrix-column" data-symbols="拳心武道影氣龍雷"></span>
+              <span class="matrix-column" data-symbols="氣武拳腿虎龍心火"></span>
+              <span class="matrix-column" data-symbols="功影龍拳武心電道"></span>
+              <span class="matrix-column" data-symbols="拳雷虎影氣心功武"></span>
+            </div>
+            <div class="matrix-core">
+              <strong>Enter the Dojo</strong>
+            </div>
+          </section>
+
+          <div class="home-mode-grid">
+            <button class="mode-card mode-card-boxing" data-action="launch-mode" data-launch-mode="boxing">
+              <span class="mode-kicker">Pure hands</span>
+              <strong>Boxing</strong>
+            </button>
+            <button class="mode-card mode-card-muay" data-action="launch-mode" data-launch-mode="muay-thai">
+              <span class="mode-kicker">Kicks, knees, teeps</span>
+              <strong>Muay Thai</strong>
+            </button>
+            <button class="mode-card mode-card-chaos" data-action="launch-mode" data-launch-mode="chaos">
+              <span class="mode-kicker">Wild mixups</span>
+              <strong>Chaos</strong>
+            </button>
+            <button class="mode-card mode-card-cardio" data-action="launch-mode" data-launch-mode="cardio">
+              <span class="mode-kicker">Conditioning pace</span>
+              <strong>Cardio</strong>
+            </button>
+          </div>
+
+          <nav class="home-nav">
+            <button class="button button-primary career-launch" data-go="career">
+              <span>Career Mode</span>
+              <small id="careerHomeSummary">Be My Fight Coach</small>
+            </button>
+            <button class="button button-ghost utility-launch" data-go="hub">
+              <span>Corner Menu</span>
+              <small>Customize | Presets | Settings</small>
+            </button>
+            <button class="button button-ghost" data-go="history">History</button>
+          </nav>
+        </section>
+
+        <section class="screen" data-screen="hub">
+          <div class="screen-top">
+            <button class="icon-button" data-go="home" aria-label="Back home">&larr;</button>
+            <div>
+              <p class="eyebrow">Corner Menu</p>
+              <h2>Control Deck</h2>
+            </div>
+          </div>
+
+          <div class="stack">
+            <button class="button button-primary button-xl utility-panel" data-go="setup">
+              <span>Customize Session</span>
+              <small>Build rounds, voice, recovery, attack mode</small>
+            </button>
+            <button class="button button-secondary button-xl utility-panel" data-go="presets">
+              <span>Presets</span>
+              <small>Load saved workouts and built-in formats</small>
+            </button>
+            <button class="button button-secondary button-xl utility-panel" data-go="settings">
+              <span>Settings</span>
+              <small>Audio, haptics, install, display controls</small>
+            </button>
+          </div>
+        </section>
+
+        <section class="screen" data-screen="career">
+          <div class="screen-top">
+            <button class="icon-button" data-go="home" aria-label="Back home">&larr;</button>
+            <div>
+              <p class="eyebrow">Career Mode</p>
+              <h2>Be My Fight Coach</h2>
+            </div>
+          </div>
+
+          <div class="stack">
+            <section class="card">
+              <div class="block-title">
+                <h3>Fighter Profile</h3>
+              </div>
+              <label class="field">
+                <span>Fighter Alias</span>
+                <input id="careerNameInput" type="text" maxlength="24" placeholder="Bag disciple" />
+              </label>
+            </section>
+
+            <section class="card">
+              <div class="block-title">
+                <h3>Current Chapter</h3>
+              </div>
+              <div class="career-header">
+                <div>
+                  <p id="careerRank" class="career-rank">Amateur Boxer</p>
+                  <p id="careerChapter" class="combo-preview">Build clean hands before the rest of the arsenal unlocks.</p>
+                </div>
+                <div class="career-xp">
+                  <strong id="careerXp">0 XP</strong>
+                  <span id="careerLevelBadge" class="pill">Level 1</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="card stats-grid">
+              <article class="stat-card">
+                <span>Sessions</span>
+                <strong id="careerSessions">0</strong>
+              </article>
+              <article class="stat-card">
+                <span>Day Streak</span>
+                <strong id="careerStreak">0</strong>
+              </article>
+              <article class="stat-card">
+                <span>Techniques</span>
+                <strong id="careerTechniques">0</strong>
+              </article>
+              <article class="stat-card">
+                <span>Discipline</span>
+                <strong id="careerDiscipline">Boxing</strong>
+              </article>
+            </section>
+
+            <section class="card">
+              <div class="block-title">
+                <h3>Next Unlock</h3>
+              </div>
+              <p id="careerNextUnlock" class="career-next">Complete more sessions to unlock new bag work.</p>
+            </section>
+
+            <section class="card">
+              <div class="block-title">
+                <h3>Unlocked Techniques</h3>
+              </div>
+              <div id="careerTechniqueList" class="technique-grid"></div>
+            </section>
+
+            <section class="card">
+              <div class="block-title">
+                <h3>Locked Ahead</h3>
+              </div>
+              <div id="careerLockedList" class="technique-grid"></div>
+            </section>
+
+            <div class="cta-stack">
+              <button class="button button-primary button-xl" data-action="start-career-session">Start Career Session</button>
+              <button class="button button-secondary button-xl" data-action="reset-career">Reset Career Progress</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" data-screen="setup">
+          <div class="screen-top">
+            <button class="icon-button" data-go="home" aria-label="Back home">←</button>
+            <div>
+              <p class="eyebrow">Session Setup</p>
+              <h2>Build the round</h2>
+            </div>
+          </div>
+
+          <div class="stack">
+            <section class="card">
+              <div class="block-title">
+                <h3>Training Type</h3>
+              </div>
+              <div class="segment-grid" id="typeSegment"></div>
+            </section>
+
+            <section class="card">
+              <div class="block-title">
+                <h3>Stance</h3>
+              </div>
+              <div class="settings-list">
+                <div class="segment-grid" id="stanceSegment"></div>
+                <label class="toggle-line">
+                  <span>Allow switch stances in callouts</span>
+                  <input id="allowSwitchStanceInput" type="checkbox" />
+                </label>
+              </div>
+            </section>
+
+            <section class="card">
+              <div class="block-title">
+                <h3>Workout Structure</h3>
+              </div>
+              <div class="field-grid">
+                <label class="field">
+                  <span>Rounds</span>
+                  <input id="roundsInput" type="number" min="1" max="20" />
+                </label>
+                <label class="field">
+                  <span>Work</span>
+                  <input id="workInput" type="number" min="10" max="600" step="5" />
+                </label>
+                <label class="field">
+                  <span>Rest</span>
+                  <input id="restInput" type="number" min="5" max="180" step="5" />
+                </label>
+              </div>
+            </section>
+
+            <section class="card">
+              <div class="block-title">
+                <h3>Difficulty</h3>
+              </div>
+              <div class="segment-grid" id="difficultySegment"></div>
+            </section>
+
+            <section class="card">
+              <div class="block-title">
+                <h3>Recovery Mode</h3>
+              </div>
+              <div class="settings-list">
+                <label class="toggle-line">
+                  <span>Active Recovery</span>
+                  <input id="activeRecoveryInput" type="checkbox" />
+                </label>
+                <div>
+                  <p class="combo-tag">Recovery Categories</p>
+                  <div id="recoveryCategoryGrid" class="segment-grid segment-grid-tight"></div>
+                </div>
+              </div>
+            </section>
+
+            <section class="card">
+              <div class="block-title">
+                <h3>Combo Style</h3>
+              </div>
+              <div class="segment-grid segment-grid-tight" id="styleSegment"></div>
+            </section>
+
+            <section class="card">
+              <div class="block-title">
+                <h3>Coach Style</h3>
+              </div>
+              <div class="segment-grid" id="coachSegment"></div>
+            </section>
+
+            <section class="card">
+              <div class="block-title">
+                <h3>Coach Voice</h3>
+              </div>
+              <div class="segment-grid segment-grid-tight" id="voiceSegment"></div>
+            </section>
+
+            <section class="card">
+              <div class="block-title">
+                <h3>Callout Frequency</h3>
+              </div>
+              <div class="segment-grid" id="frequencySegment"></div>
+            </section>
+
+            <section class="card">
+              <div class="block-title">
+                <h3>Attack Mode</h3>
+              </div>
+              <div class="settings-list">
+                <label class="toggle-line">
+                  <span>Randomized Attack Mode</span>
+                  <input id="attackModeInput" type="checkbox" />
+                </label>
+              </div>
+            </section>
+
+            <div class="cta-stack">
+              <button class="button button-primary button-xl" data-action="begin-countdown">Start Session</button>
+              <button class="button button-secondary button-xl" data-action="save-preset">Save as Preset</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen screen-countdown" data-screen="countdown">
+          <div class="countdown-meta">
+            <span id="countdownRound">Round 1 / 8</span>
+            <span id="countdownMode">Boxing</span>
+          </div>
+          <div class="countdown-body">
+            <p class="countdown-label">Get ready</p>
+            <div id="countdownNumber" class="countdown-number">3</div>
+          </div>
+        </section>
+
+        <section class="screen screen-live" data-screen="live">
+          <div class="attack-fx" aria-hidden="true">
+            <div class="attack-flash"></div>
+            <div class="attack-lightning bolt-left"></div>
+            <div class="attack-lightning bolt-right"></div>
+            <div class="blood-spray spray-left"></div>
+            <div class="blood-spray spray-right"></div>
+            <div class="attack-banner">ATTACK MODE</div>
+          </div>
+
+          <div class="live-topbar">
+            <div>
+              <p class="eyebrow eyebrow-inline" id="liveRoundLabel">Round 1 / 8</p>
+              <div class="phase-row">
+                <span id="livePhase" class="phase-pill">WORK</span>
+                <span id="liveModeLabel" class="muted-chip">BOXING</span>
+              </div>
+            </div>
+            <div class="topbar-actions">
+              <button class="icon-button" id="soundToggle" aria-label="Mute">🔊</button>
+              <button class="icon-button" data-go="settings" data-settings-return="live" aria-label="Settings">⚙</button>
+            </div>
+          </div>
+
+          <div class="ring-wrap">
+            <svg class="progress-ring" viewBox="0 0 220 220" aria-hidden="true">
+              <circle class="progress-ring-track" cx="110" cy="110" r="92"></circle>
+              <circle id="progressRing" class="progress-ring-value" cx="110" cy="110" r="92"></circle>
+            </svg>
+            <div class="timer-stack">
+              <div id="liveTimer" class="live-timer">2:00</div>
+              <div id="liveStatusText" class="live-status-text">Stay ready</div>
+            </div>
+          </div>
+
+          <section id="comboCard" class="live-card combo-card">
+            <p id="comboTag" class="combo-tag">Balanced combo</p>
+            <div id="comboText" class="combo-text">Jab, cross, lead hook</div>
+            <p id="comboPreview" class="combo-preview">Up next: Counter reset</p>
+          </section>
+
+          <section id="restCard" class="live-card rest-card hidden">
+            <p id="restTag" class="combo-tag">Recovery</p>
+            <div id="restMessage" class="combo-text">Breathe</div>
+            <p id="restCategory" class="combo-tag">Category: Recovery</p>
+            <p id="restPreview" class="combo-preview">Next round coming</p>
+          </section>
+
+          <div class="bottom-bar">
+            <button class="button button-secondary" data-action="pause-session">Pause</button>
+            <button class="button button-secondary" data-action="mute-session">Mute</button>
+            <button class="button button-secondary" data-action="exit-session">Exit</button>
+            <button class="button button-secondary" data-action="toggle-fullscreen">Full</button>
+          </div>
+
+          <div id="pauseOverlay" class="overlay hidden">
+            <div class="overlay-card">
+              <p class="eyebrow">Paused</p>
+              <h2>Hold the pace</h2>
+              <div class="cta-stack">
+                <button class="button button-primary button-xl" data-action="resume-session">Resume</button>
+                <button class="button button-secondary button-xl" data-action="restart-session">Restart Session</button>
+                <button class="button button-ghost button-xl" data-action="exit-session">Exit to Home</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" data-screen="complete">
+          <div class="screen-top">
+            <div>
+              <p class="eyebrow">Session Complete</p>
+              <h2>Workout Complete</h2>
+            </div>
+          </div>
+
+          <div class="stack">
+            <section class="card stats-grid">
+              <article class="stat-card">
+                <span>Rounds Completed</span>
+                <strong id="completeRounds">8</strong>
+              </article>
+              <article class="stat-card">
+                <span>Total Time</span>
+                <strong id="completeTime">18:30</strong>
+              </article>
+              <article class="stat-card">
+                <span>Combos Called</span>
+                <strong id="completeCombos">24</strong>
+              </article>
+              <article class="stat-card">
+                <span>Mode Used</span>
+                <strong id="completeMode">Boxing</strong>
+              </article>
+            </section>
+
+            <section class="card flavor-card">
+              <p id="completeFlavor" class="flavor-line">Sharp work.</p>
+            </section>
+
+            <div class="cta-stack">
+              <button class="button button-primary button-xl" data-action="run-again">Run Again</button>
+              <button class="button button-secondary button-xl" data-action="save-preset">Save Preset</button>
+              <button class="button button-ghost button-xl" data-go="home">Back Home</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" data-screen="presets">
+          <div class="screen-top">
+            <button class="icon-button" data-go="home" aria-label="Back home">←</button>
+            <div>
+              <p class="eyebrow">Presets</p>
+              <h2>Saved rounds</h2>
+            </div>
+          </div>
+          <div id="presetList" class="stack"></div>
+        </section>
+
+        <section class="screen" data-screen="history">
+          <div class="screen-top">
+            <button class="icon-button" data-go="home" aria-label="Back home">←</button>
+            <div>
+              <p class="eyebrow">History</p>
+              <h2>Training stats</h2>
+            </div>
+          </div>
+          <div class="stack">
+            <section class="card stats-grid">
+              <article class="stat-card">
+                <span>Total Sessions</span>
+                <strong id="historySessions">0</strong>
+              </article>
+              <article class="stat-card">
+                <span>Total Rounds</span>
+                <strong id="historyRounds">0</strong>
+              </article>
+              <article class="stat-card">
+                <span>Total Minutes</span>
+                <strong id="historyMinutes">0</strong>
+              </article>
+              <article class="stat-card">
+                <span>Favorite Mode</span>
+                <strong id="historyMode">-</strong>
+              </article>
+            </section>
+
+            <section class="card">
+              <div class="block-title">
+                <h3>Recent Sessions</h3>
+              </div>
+              <div id="historyList" class="stack compact-stack"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="screen" data-screen="settings">
+          <div class="screen-top">
+            <button class="icon-button" id="settingsBackButton" aria-label="Back">←</button>
+            <div>
+              <p class="eyebrow">Settings</p>
+              <h2>Control the corner</h2>
+            </div>
+          </div>
+
+          <div class="stack">
+            <section class="card">
+              <div class="block-title">
+                <h3>Audio</h3>
+              </div>
+              <div class="settings-list">
+                <label class="toggle-line"><span>Voice on</span><input id="voiceEnabledInput" type="checkbox" checked /></label>
+                <label class="toggle-line"><span>Bell on</span><input id="bellEnabledInput" type="checkbox" checked /></label>
+                <label class="toggle-line"><span>UI gong sounds</span><input id="uiGongInput" type="checkbox" checked /></label>
+                <label class="toggle-line"><span>Warning cues</span><input id="warningEnabledInput" type="checkbox" checked /></label>
+                <label class="field">
+                  <span>Speech speed</span>
+                  <input id="speechRateInput" type="range" min="0.7" max="1.3" step="0.05" />
+                  <small id="speechRateValue"></small>
+                </label>
+                <label class="field">
+                  <span>Voice selection</span>
+                  <select id="voiceSelect"></select>
+                </label>
+              </div>
+            </section>
+
+            <section class="card">
+              <div class="block-title">
+                <h3>Display</h3>
+              </div>
+              <div class="settings-list">
+                <label class="toggle-line"><span>Keep screen awake</span><input id="wakeLockInput" type="checkbox" /></label>
+                <label class="toggle-line"><span>Large text mode</span><input id="largeTextInput" type="checkbox" /></label>
+              </div>
+            </section>
+
+            <section class="card">
+              <div class="block-title">
+                <h3>Haptics</h3>
+              </div>
+              <div class="settings-list">
+                <label class="toggle-line"><span>Vibrate on round start</span><input id="vibrateStartInput" type="checkbox" checked /></label>
+                <label class="toggle-line"><span>Vibrate on 10 second warning</span><input id="vibrateWarningInput" type="checkbox" checked /></label>
+                <label class="toggle-line"><span>Vibrate on rest start</span><input id="vibrateRestInput" type="checkbox" checked /></label>
+              </div>
+            </section>
+
+            <section class="card">
+              <div class="block-title">
+                <h3>App</h3>
+              </div>
+              <div class="settings-list">
+                <button class="button button-secondary" id="installButton">Install App</button>
+                <button class="button button-ghost" id="resetDataButton">Reset Saved Data</button>
+              </div>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="./app.js"></script>
   </body>
-  </html>
+</html>
