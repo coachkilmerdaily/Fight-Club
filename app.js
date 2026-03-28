@@ -1367,11 +1367,18 @@
     const session = runtime.currentSession;
     if (!session || !session.attackMode || session.attackEventUsed) return;
     if (session.workDuration < 25) return;
-    if (Math.random() > 0.42) return;
+    let startDelay;
+    let attackLength;
 
-    const maxStart = Math.max(6, session.workDuration - 20);
-    const startDelay = 5 + Math.random() * (maxStart - 5);
-    const attackLength = 5 + Math.floor(Math.random() * 11);
+    if (session.round === 1 && session.workDuration >= 60) {
+      startDelay = session.workDuration - 60;
+      attackLength = 10;
+    } else {
+      if (Math.random() > 0.42) return;
+      const maxStart = Math.max(6, session.workDuration - 20);
+      startDelay = 5 + Math.random() * (maxStart - 5);
+      attackLength = 5 + Math.floor(Math.random() * 11);
+    }
 
     runtime.attackCueTimer = window.setTimeout(() => {
       if (!runtime.currentSession || runtime.currentSession.phase !== 'work') return;
