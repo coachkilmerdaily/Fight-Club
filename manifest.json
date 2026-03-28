@@ -1,6 +1,6 @@
 {
-  "name": "Fight Club: Heavybag Drills",
-  "short_name": "Heavybag",
+  "name": "Fight Arcade",
+  "short_name": "Fight Arcade",
   "start_url": "./index.html",
   "display": "standalone",
   "theme_color": "#07090d",

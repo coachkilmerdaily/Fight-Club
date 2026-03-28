@@ -1,4 +1,4 @@
-# Fight Club: Heavybag Drills
+# Fight Arcade
 
 Mobile-first boxing and kickboxing interval trainer with live combo callouts, presets, history, and PWA support.
 

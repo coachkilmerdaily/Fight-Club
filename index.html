@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
     />
-    <title>Fight Club: Heavybag Drills</title>
+    <title>Fight Arcade</title>
     <meta name="theme-color" content="#07090d" />
     <meta name="description" content="8-bit fight timer with live heavy bag combo callouts." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -28,7 +28,7 @@
             <button id="homeBackButton" class="icon-button home-back hidden" type="button" aria-label="Go back">&larr;</button>
             <div class="brand-mark">FC</div>
             <div>
-              <p class="eyebrow">Fight Club: Heavybag Drills</p>
+              <p class="eyebrow">Fight Arcade</p>
               <h1>Heavy Bag Drills</h1>
             </div>
           </header>
@@ -102,6 +102,46 @@
               <span>Settings</span>
               <small>Audio, haptics, install, display controls</small>
             </button>
+          </div>
+        </section>
+
+        <section class="screen" data-screen="account">
+          <div class="screen-top">
+            <button class="icon-button" data-go="home" aria-label="Back home">&larr;</button>
+            <div>
+              <p class="eyebrow">Fight Arcade</p>
+              <h2>Unlock Full Access</h2>
+            </div>
+          </div>
+
+          <div class="stack">
+            <section class="card">
+              <div class="block-title">
+                <h3>Free Sessions Used</h3>
+              </div>
+              <p id="freeSessionSummary" class="career-next">You have used 5 of 5 free sessions.</p>
+            </section>
+
+            <section class="card">
+              <div class="block-title">
+                <h3>Create Account</h3>
+              </div>
+              <div class="settings-list">
+                <label class="field">
+                  <span>Fighter Name</span>
+                  <input id="accountNameInput" type="text" maxlength="24" placeholder="Fight Arcade player" />
+                </label>
+                <label class="field">
+                  <span>Email</span>
+                  <input id="accountEmailInput" type="email" placeholder="name@example.com" />
+                </label>
+              </div>
+            </section>
+
+            <div class="cta-stack">
+              <button class="button button-primary button-xl" data-action="create-account">Create Local Account</button>
+              <button class="button button-ghost button-xl" data-go="home">Maybe Later</button>
+            </div>
           </div>
         </section>
 

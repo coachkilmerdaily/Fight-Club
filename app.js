@@ -1,6 +1,7 @@
 (function () {
   const STORAGE_KEY = 'fight-flow-state-v2';
   const HISTORY_LIMIT = 20;
+  const FREE_SESSION_LIMIT = 5;
   const RING_RADIUS = 92;
   const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
@@ -462,6 +463,12 @@
     },
     presets: [],
     history: [],
+    account: {
+      registered: false,
+      fighterName: '',
+      email: '',
+      freeSessionsUsed: 0,
+    },
     career: {
       fighterName: 'Bag Disciple',
       sessionsCompleted: 0,
@@ -550,6 +557,9 @@
       historyMinutes: document.getElementById('historyMinutes'),
       historyMode: document.getElementById('historyMode'),
       historyList: document.getElementById('historyList'),
+      freeSessionSummary: document.getElementById('freeSessionSummary'),
+      accountNameInput: document.getElementById('accountNameInput'),
+      accountEmailInput: document.getElementById('accountEmailInput'),
       stanceSegment: document.getElementById('stanceSegment'),
       allowSwitchStanceInput: document.getElementById('allowSwitchStanceInput'),
       settingsBackButton: document.getElementById('settingsBackButton'),
@@ -599,6 +609,7 @@
             ...defaultState,
             ...parsed,
             setup: mergedSetup,
+            account: { ...defaultState.account, ...(parsed.account || {}) },
             career: { ...defaultState.career, ...(parsed.career || {}) },
           };
         })(),
@@ -735,6 +746,14 @@
   function updateHomeBackButton() {
     const canGoBack = runtime.state.previousScreen && runtime.state.previousScreen !== 'home';
     els.homeBackButton.classList.toggle('hidden', !canGoBack);
+  }
+
+  function freeSessionsRemaining() {
+    return Math.max(0, FREE_SESSION_LIMIT - (runtime.state.account.freeSessionsUsed || 0));
+  }
+
+  function canStartSession() {
+    return runtime.state.account.registered || freeSessionsRemaining() > 0;
   }
 
   function createSegmentButtons(container, items, key, mapper) {
@@ -889,6 +908,15 @@
       : '<article class="technique-chip unlocked"><strong>Mastered</strong><span>The full heavy bag skill tree is open.</span></article>';
   }
 
+  function renderAccountGate() {
+    const remaining = freeSessionsRemaining();
+    els.freeSessionSummary.textContent = runtime.state.account.registered
+      ? 'Local account active. Full access unlocked on this device.'
+      : `You have used ${runtime.state.account.freeSessionsUsed} of ${FREE_SESSION_LIMIT} free sessions. ${remaining} remaining.`;
+    els.accountNameInput.value = runtime.state.account.fighterName || runtime.state.career.fighterName || '';
+    els.accountEmailInput.value = runtime.state.account.email || '';
+  }
+
   function showScreen(name) {
     const previous = runtime.state.screen;
     if (previous && previous !== name) {
@@ -901,10 +929,12 @@
     saveState();
     updateHomeBackButton();
     renderCareerSummary();
+    renderAccountGate();
     if (name === 'history') renderHistory();
     if (name === 'presets') renderPresets();
     if (name === 'settings') renderPreferences();
     if (name === 'career') renderCareerSummary();
+    if (name === 'account') renderAccountGate();
   }
 
   function goToScreen(name, options) {
@@ -1257,6 +1287,10 @@
   }
 
   function startCountdown() {
+    if (!canStartSession()) {
+      showScreen('account');
+      return;
+    }
     readNumericInputs();
     runtime.countdownValue = 3;
     els.countdownRound.textContent = `Round 1 / ${runtime.state.setup.rounds}`;
@@ -1302,6 +1336,7 @@
       recoveryRotation: createRecoveryRotation(runtime.state.setup.recoveryCategories),
       attackActive: false,
       attackEventUsed: false,
+      attackRoundsTriggered: [],
       attackRemaining: 0,
       attackEndsAt: 0,
     };
@@ -1342,6 +1377,7 @@
       session.currentStance = formattedCombo.endingStance;
       session.combosCalled += 1;
       session.attackActive = false;
+      session.attackEventUsed = false;
       updateLiveCombo(true);
       speakCallout(session.currentCombo);
       scheduleAttackMode();
@@ -1371,18 +1407,18 @@
     const session = runtime.currentSession;
     if (!session || !session.attackMode || session.attackEventUsed) return;
     if (session.workDuration < 25) return;
-    let startDelay;
-    let attackLength;
+    const pairStartRound = session.round % 2 === 0 ? session.round - 1 : session.round;
+    const pairEndRound = Math.min(pairStartRound + 1, session.rounds);
+    const isSecondRoundInPair = session.round === pairEndRound && pairEndRound !== pairStartRound;
+    const pairAlreadySatisfied = Array.isArray(session.attackRoundsTriggered)
+      && session.attackRoundsTriggered.some((round) => round >= pairStartRound && round <= pairEndRound);
+    const mustTriggerThisRound = isSecondRoundInPair && !pairAlreadySatisfied;
+    const shouldTriggerThisRound = mustTriggerThisRound || Math.random() <= 0.42;
+    if (!shouldTriggerThisRound) return;
 
-    if (session.round === 1 && session.workDuration >= 30) {
-      startDelay = 30;
-      attackLength = 10;
-    } else {
-      if (Math.random() > 0.42) return;
-      const maxStart = Math.max(6, session.workDuration - 20);
-      startDelay = 5 + Math.random() * (maxStart - 5);
-      attackLength = 5 + Math.floor(Math.random() * 11);
-    }
+    const maxStart = Math.max(6, session.workDuration - 20);
+    const startDelay = 5 + Math.random() * (maxStart - 5);
+    const attackLength = 5 + Math.floor(Math.random() * 11);
 
     runtime.attackCueTimer = window.setTimeout(() => {
       if (!runtime.currentSession || runtime.currentSession.phase !== 'work') return;
@@ -1395,6 +1431,10 @@
     if (!session || session.attackActive || session.phase !== 'work') return;
     session.attackActive = true;
     session.attackEventUsed = true;
+    session.attackRoundsTriggered = Array.isArray(session.attackRoundsTriggered) ? session.attackRoundsTriggered : [];
+    if (!session.attackRoundsTriggered.includes(session.round)) {
+      session.attackRoundsTriggered.push(session.round);
+    }
     session.attackRemaining = durationSeconds;
     session.attackEndsAt = Date.now() + durationSeconds * 1000;
     document.body.classList.add('attack-mode-state');
@@ -1628,6 +1668,12 @@
     if (session.careerMode) {
       awardCareerProgress(session);
     }
+    if (!runtime.state.account.registered) {
+      runtime.state.account.freeSessionsUsed = Math.min(
+        FREE_SESSION_LIMIT,
+        (runtime.state.account.freeSessionsUsed || 0) + 1,
+      );
+    }
     saveState();
     els.completeRounds.textContent = String(session.rounds);
     els.completeTime.textContent = formatSessionDuration(totalTime);
@@ -1734,6 +1780,23 @@
     runtime.state.setup.careerMode = false;
     saveState();
     renderCareerSummary();
+  }
+
+  function createLocalAccount() {
+    const fighterName = (els.accountNameInput.value || '').trim().slice(0, 24) || 'Fight Arcade Player';
+    const email = (els.accountEmailInput.value || '').trim();
+    if (!email) {
+      els.freeSessionSummary.textContent = 'Enter an email to unlock local account access.';
+      return;
+    }
+    runtime.state.account.registered = true;
+    runtime.state.account.fighterName = fighterName;
+    runtime.state.account.email = email;
+    runtime.state.career.fighterName = fighterName;
+    saveState();
+    renderAccountGate();
+    renderCareerSummary();
+    showScreen('home');
   }
 
   function awardCareerProgress(session) {
@@ -1901,6 +1964,7 @@
         if (action === 'start-career-session') return startCareerSession();
         if (action === 'quick-start') return startCountdown();
         if (action === 'begin-countdown') return startCountdown();
+        if (action === 'create-account') return createLocalAccount();
         if (action === 'save-preset') return savePreset();
         if (action === 'reset-career') return resetCareerProgress();
         if (action === 'pause-session') return pauseSession();
@@ -2080,6 +2144,7 @@
     renderSegments();
     renderSetupForm();
     renderCareerSummary();
+    renderAccountGate();
     renderPresets();
     renderHistory();
     renderPreferences();
