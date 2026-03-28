@@ -26,23 +26,23 @@
             <div class="brand-mark">FC</div>
             <div>
               <p class="eyebrow">Fight Club: Heavybag Drills</p>
-              <h1>Heavy bag drills with arcade fight energy</h1>
+              <h1>Heavy Bag Drills</h1>
             </div>
           </header>
 
-          <section class="hero-scene" aria-hidden="true">
-            <div class="scene-banner">Shaolin arcade mode</div>
-            <div class="arcade-stage">
-              <div class="heavybag-chain"></div>
-              <div class="heavybag"></div>
-              <div class="fighter">
-                <span class="fighter-head"></span>
-                <span class="fighter-body"></span>
-                <span class="fighter-arm rear-arm"></span>
-                <span class="fighter-arm lead-arm"></span>
-                <span class="fighter-leg rear-leg"></span>
-                <span class="fighter-leg lead-leg"></span>
-              </div>
+          <section class="hero-scene hero-matrix" aria-hidden="true">
+            <div class="matrix-rain">
+              <span class="matrix-column" data-symbols="功力拳氣影龍虎心武"></span>
+              <span class="matrix-column" data-symbols="武道拳腿氣影心火"></span>
+              <span class="matrix-column" data-symbols="龍虎氣功拳影電火"></span>
+              <span class="matrix-column" data-symbols="拳心武道影氣龍雷"></span>
+              <span class="matrix-column" data-symbols="氣武拳腿虎龍心火"></span>
+              <span class="matrix-column" data-symbols="功影龍拳武心電道"></span>
+              <span class="matrix-column" data-symbols="拳雷虎影氣心功武"></span>
+            </div>
+            <div class="matrix-core">
+              <p class="matrix-kicker">8-Bit Fight Interface</p>
+              <strong>Enter the Dojo</strong>
             </div>
           </section>
 
@@ -65,21 +65,42 @@
             </button>
           </div>
 
-          <section class="card career-tease">
-            <div>
-              <p class="eyebrow">Career Mode</p>
-              <h3>Be My Fight Coach</h3>
-            </div>
-            <p id="careerHomeSummary" class="muted-chip">Start as an amateur boxer and unlock your arsenal.</p>
-          </section>
-
           <nav class="home-nav">
-            <button class="button button-primary" data-go="career">Career</button>
-            <button class="button button-ghost" data-go="setup">Customize</button>
-            <button class="button button-ghost" data-go="presets">Presets</button>
+            <button class="button button-primary career-launch" data-go="career">
+              <span>Career Mode</span>
+              <small id="careerHomeSummary">Be My Fight Coach</small>
+            </button>
+            <button class="button button-ghost utility-launch" data-go="hub">
+              <span>Corner Menu</span>
+              <small>Customize | Presets | Settings</small>
+            </button>
             <button class="button button-ghost" data-go="history">History</button>
-            <button class="button button-ghost" data-go="settings">Settings</button>
           </nav>
+        </section>
+
+        <section class="screen" data-screen="hub">
+          <div class="screen-top">
+            <button class="icon-button" data-go="home" aria-label="Back home">&larr;</button>
+            <div>
+              <p class="eyebrow">Corner Menu</p>
+              <h2>Control Deck</h2>
+            </div>
+          </div>
+
+          <div class="stack">
+            <button class="button button-primary button-xl utility-panel" data-go="setup">
+              <span>Customize Session</span>
+              <small>Build rounds, voice, recovery, attack mode</small>
+            </button>
+            <button class="button button-secondary button-xl utility-panel" data-go="presets">
+              <span>Presets</span>
+              <small>Load saved workouts and built-in formats</small>
+            </button>
+            <button class="button button-secondary button-xl utility-panel" data-go="settings">
+              <span>Settings</span>
+              <small>Audio, haptics, install, display controls</small>
+            </button>
+          </div>
         </section>
 
         <section class="screen" data-screen="career">

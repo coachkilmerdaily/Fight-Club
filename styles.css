@@ -155,10 +155,11 @@ button {
   margin: 1.2rem 0 1.1rem;
   border: 3px solid var(--gold);
   background:
-    linear-gradient(180deg, rgba(212, 171, 75, 0.08), rgba(193, 31, 23, 0.08)),
-    #120c0a;
+    radial-gradient(circle at top, rgba(63, 143, 99, 0.16), transparent 34%),
+    linear-gradient(180deg, rgba(13, 37, 24, 0.92), rgba(7, 14, 11, 0.98));
   box-shadow: var(--shadow);
   position: relative;
+  min-height: 13rem;
 }
 
 .hero-scene::before {
@@ -169,141 +170,97 @@ button {
   pointer-events: none;
 }
 
-.scene-banner {
-  padding: 0.55rem 0.8rem;
-  border-bottom: 3px solid var(--gold);
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  font-size: 0.72rem;
-  color: var(--gold);
-  background: rgba(0, 0, 0, 0.18);
-}
-
-.arcade-stage {
-  position: relative;
-  height: 13rem;
+.hero-matrix {
   overflow: hidden;
-  background:
-    linear-gradient(180deg, rgba(255, 229, 170, 0.06), transparent 45%),
-    linear-gradient(180deg, transparent 68%, rgba(212, 171, 75, 0.16) 68% 72%, #22130f 72%);
 }
 
-.heavybag-chain,
-.heavybag,
-.fighter,
-.fighter span {
+.matrix-rain {
   position: absolute;
-  image-rendering: pixelated;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.3rem;
+  padding: 0.75rem;
 }
 
-.heavybag-chain {
-  top: 0.9rem;
-  left: calc(50% + 2.1rem);
-  width: 0.45rem;
-  height: 2.2rem;
-  background: var(--gold);
-  box-shadow:
-    0 0.55rem 0 var(--gold),
-    0 1.1rem 0 var(--gold),
-    0 1.65rem 0 var(--gold);
+.matrix-column {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  color: rgba(120, 196, 130, 0.82);
+  font-size: 1.25rem;
+  letter-spacing: 0.06em;
+  text-shadow: 0 0 10px rgba(120, 196, 130, 0.32);
 }
 
-.heavybag {
-  top: 3rem;
-  left: calc(50% + 1rem);
-  width: 3.75rem;
-  height: 5.8rem;
-  background: linear-gradient(180deg, #a01c16, #5b110f);
-  border: 3px solid #f0c35a;
-  box-shadow:
-    inset 0 0 0 3px rgba(0, 0, 0, 0.24),
-    0.9rem 0 0 rgba(0, 0, 0, 0.22);
+.matrix-column::before {
+  content: attr(data-symbols) "\A" attr(data-symbols) "\A" attr(data-symbols);
+  white-space: pre;
+  position: absolute;
+  top: -120%;
+  left: 50%;
+  transform: translateX(-50%);
+  line-height: 1.05;
+  animation: matrix-fall 6s linear infinite;
 }
 
-.fighter {
-  left: calc(50% - 6.7rem);
-  bottom: 1.15rem;
-  width: 7rem;
-  height: 8.4rem;
+.matrix-column:nth-child(2)::before {
+  animation-duration: 5.2s;
+  animation-delay: -1.2s;
 }
 
-.fighter-head {
-  top: 0.35rem;
-  left: 1.8rem;
-  width: 1.5rem;
-  height: 1.5rem;
-  background: #f0c49a;
-  box-shadow:
-    0.55rem 0 0 #f0c49a,
-    0 0.55rem 0 #f0c49a,
-    0.55rem 0.55rem 0 #f0c49a,
-    0 1.1rem 0 #2a1713,
-    0.55rem 1.1rem 0 #2a1713;
+.matrix-column:nth-child(3)::before {
+  animation-duration: 7.4s;
+  animation-delay: -2.8s;
 }
 
-.fighter-body {
-  top: 2.3rem;
-  left: 1.55rem;
-  width: 1.8rem;
-  height: 2.2rem;
-  background: #d4ab4b;
-  box-shadow:
-    0.6rem 0 0 #d4ab4b,
-    0 0.6rem 0 #d4ab4b,
-    0.6rem 0.6rem 0 #d4ab4b,
-    0 1.2rem 0 #8c1915,
-    0.6rem 1.2rem 0 #8c1915,
-    0 1.8rem 0 #8c1915,
-    0.6rem 1.8rem 0 #8c1915;
+.matrix-column:nth-child(4)::before {
+  animation-duration: 5.8s;
+  animation-delay: -0.6s;
 }
 
-.fighter-arm {
-  width: 1.4rem;
-  height: 0.65rem;
-  background: #f0c49a;
+.matrix-column:nth-child(5)::before {
+  animation-duration: 6.6s;
+  animation-delay: -3.1s;
 }
 
-.rear-arm {
-  top: 2.7rem;
-  left: 0.5rem;
-  box-shadow:
-    0.65rem 0 0 #f0c49a,
-    1.3rem 0 0 #7d1713;
+.matrix-column:nth-child(6)::before {
+  animation-duration: 5.5s;
+  animation-delay: -1.7s;
 }
 
-.lead-arm {
-  top: 2.15rem;
-  left: 3.6rem;
-  width: 1.65rem;
-  box-shadow:
-    0.7rem 0 0 #f0c49a,
-    1.4rem 0 0 #f0c49a,
-    2.1rem 0.65rem 0 #f0c49a,
-    2.75rem 0.65rem 0 #f0c49a;
+.matrix-column:nth-child(7)::before {
+  animation-duration: 7.1s;
+  animation-delay: -2.1s;
 }
 
-.fighter-leg {
-  width: 0.75rem;
-  height: 2.45rem;
-  background: #f0c49a;
+.matrix-core {
+  position: relative;
+  z-index: 1;
+  min-height: 13rem;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 0.55rem;
+  text-align: center;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.54));
 }
 
-.rear-leg {
-  top: 5.55rem;
-  left: 1.95rem;
-  box-shadow:
-    0 0.7rem 0 #f0c49a,
-    -0.65rem 1.4rem 0 #f0c49a;
+.matrix-kicker {
+  color: #9fe3aa;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.74rem;
 }
 
-.lead-leg {
-  top: 5.2rem;
-  left: 3.15rem;
-  box-shadow:
-    0 0.7rem 0 #f0c49a,
-    0.7rem 1.3rem 0 #f0c49a,
-    1.4rem 1.9rem 0 #f0c49a,
-    2.1rem 1.9rem 0 #f0c49a;
+.matrix-core strong {
+  font-size: clamp(1.8rem, 8vw, 3rem);
+  text-transform: uppercase;
+  color: #e7ffd9;
+  letter-spacing: 0.08em;
+  text-shadow:
+    3px 3px 0 rgba(5, 12, 8, 0.9),
+    0 0 18px rgba(120, 196, 130, 0.24);
 }
 
 .brand-mark {
@@ -380,19 +337,36 @@ h3 {
   margin-top: 1rem;
 }
 
-.career-tease {
-  margin-top: 1rem;
-  display: grid;
-  gap: 0.45rem;
-  background:
-    linear-gradient(180deg, rgba(212, 171, 75, 0.12), rgba(193, 31, 23, 0.08)),
-    var(--card);
-}
-
 .home-mode-grid {
   display: grid;
   gap: 0.8rem;
   margin-top: auto;
+}
+
+.career-launch,
+.utility-launch,
+.utility-panel {
+  display: grid;
+  gap: 0.3rem;
+  text-align: left;
+  align-content: center;
+}
+
+.career-launch {
+  grid-column: 1 / -1;
+}
+
+.career-launch small,
+.utility-launch small,
+.utility-panel small {
+  font-size: 0.74rem;
+  color: rgba(255, 244, 222, 0.72);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.utility-panel small {
+  color: rgba(255, 244, 222, 0.62);
 }
 
 .mode-card {
@@ -1223,6 +1197,20 @@ h3 {
   }
 }
 
+@keyframes matrix-fall {
+  0% {
+    transform: translate(-50%, -6%);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(-50%, 108%);
+    opacity: 0;
+  }
+}
+
 @media (min-width: 720px) {
   .app-frame {
     width: min(100%, 56rem);
@@ -1234,7 +1222,7 @@ h3 {
   }
 
   .home-nav {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .segment-grid,

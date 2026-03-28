@@ -791,7 +791,7 @@
     els.careerNextUnlock.textContent = nextUnlock
       ? `${nextUnlock.name}: ${describeRequirement(nextUnlock)}. ${nextUnlock.description}`
       : 'Full arsenal unlocked. Keep the streak alive for mastery.';
-    els.careerHomeSummary.textContent = `${career.fighterName || 'Bag Disciple'} | ${progress.chapter.title} | ${career.streakDays} day streak`;
+    els.careerHomeSummary.textContent = `${progress.chapter.title} | ${career.streakDays} day streak`;
     els.careerTechniqueList.innerHTML = progress.unlocked
       .map(
         (item) => `
