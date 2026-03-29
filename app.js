@@ -1076,6 +1076,8 @@
     playTone(420, 0.12, 0.01, 0.07);
     playTone(560, 0.12, 0.15, 0.06);
     playTone(420, 0.12, 0.29, 0.07);
+    playTone(180, 0.24, 0.03, 0.08);
+    playTone(240, 0.24, 0.19, 0.06);
   }
 
   function playAttackSirenPulse() {
@@ -1099,6 +1101,9 @@
     gain.connect(context.destination);
     oscillator.start(start);
     oscillator.stop(start + 0.56);
+
+    playTone(160, 0.08, 0.03, 0.05);
+    playTone(220, 0.08, 0.17, 0.04);
 
     document.body.classList.remove('attack-pulse');
     void document.body.offsetWidth;
@@ -1171,10 +1176,15 @@
     }
   }
 
-  function difficultyLength() {
-    if (runtime.state.setup.difficulty === 'Beginner') return 2;
-    if (runtime.state.setup.difficulty === 'Advanced') return 5;
-    return 4;
+  function difficultyBounds() {
+    if (runtime.state.setup.difficulty === 'Beginner') return { min: 2, max: 3 };
+    if (runtime.state.setup.difficulty === 'Advanced') return { min: 5, max: 7 };
+    return { min: 3, max: 5 };
+  }
+
+  function difficultyTargetLength() {
+    const bounds = difficultyBounds();
+    return bounds.min + Math.floor(Math.random() * (bounds.max - bounds.min + 1));
   }
 
   function shuffle(array) {
@@ -1201,9 +1211,8 @@
     };
   }
 
-  function buildProceduralCombos(maxLength) {
+  function currentComboPools() {
     const mode = runtime.state.setup.mode;
-    const style = runtime.state.setup.comboStyle;
     const allowedMoves = currentAllowedMoves();
     const defaultAttackPool = mode === 'Kickboxing' ? [...offenseMoves, ...kickMoves, ...bodyAttackMoves] : [...offenseMoves, ...bodyAttackMoves];
     const defaultDefensePool = [...defensiveMoves];
@@ -1218,6 +1227,27 @@
       ? filteredAttackPool.filter((move) => allowedMoves.has(move) || bodyAttackMoves.includes(move))
       : filteredAttackPool;
     const defensePool = allowedMoves ? filteredDefensePool.filter((move) => allowedMoves.has(move)) : filteredDefensePool;
+    return { attackPool, defensePool };
+  }
+
+  function shapeCombo(combo, targetLength) {
+    const style = runtime.state.setup.comboStyle;
+    const { attackPool, defensePool } = currentComboPools();
+    if (!attackPool.length) return combo.slice(0, targetLength);
+    const shaped = combo.slice(0, targetLength);
+    while (shaped.length < targetLength) {
+      const shouldUseDefense = defensePool.length
+        && (style === 'Counter' || style === 'Defense' || (style === 'Balanced' && Math.random() > 0.72));
+      const pool = shouldUseDefense ? defensePool : attackPool;
+      const nextMove = pool[Math.floor(Math.random() * pool.length)];
+      shaped.push(nextMove);
+    }
+    return shaped;
+  }
+
+  function buildProceduralCombos(targetLength) {
+    const style = runtime.state.setup.comboStyle;
+    const { attackPool, defensePool } = currentComboPools();
     if (attackPool.length < 2) return [];
     const combos = [];
     for (let i = 0; i < 4; i += 1) {
@@ -1232,20 +1262,73 @@
       } else if (Math.random() > 0.5 && defensePool.length) {
         combo.push(defensePool[Math.floor(Math.random() * defensePool.length)]);
       }
-      combos.push(combo.slice(0, maxLength));
+      combos.push(shapeCombo(combo, targetLength));
     }
     return combos;
   }
 
-  function generateCombo(previous) {
+  function comboSignature(combo) {
+    return combo.join(', ');
+  }
+
+  function endingMove(combo) {
+    return combo[combo.length - 1] || '';
+  }
+
+  function countMoveFrequency(recentCombos) {
+    const counts = new Map();
+    recentCombos.flat().forEach((move) => {
+      counts.set(move, (counts.get(move) || 0) + 1);
+    });
+    return counts;
+  }
+
+  function scoreComboDiversity(combo, recentCombos) {
+    if (!recentCombos.length) return 0;
+    const recentSignatures = new Set(recentCombos.map(comboSignature));
+    if (recentSignatures.has(comboSignature(combo))) return -1000;
+
+    const moveCounts = countMoveFrequency(recentCombos);
+    const recentLastCombo = recentCombos[recentCombos.length - 1];
+    const recentEndings = recentCombos.map(endingMove);
+
+    let score = 0;
+    combo.forEach((move, index) => {
+      score -= (moveCounts.get(move) || 0) * (index === combo.length - 1 ? 2.5 : 1.5);
+      if (recentEndings.includes(move)) score -= 1.5;
+    });
+
+    if (recentLastCombo) {
+      const sharedMoves = combo.filter((move) => recentLastCombo.includes(move)).length;
+      score -= sharedMoves * 2.5;
+      if (endingMove(combo) === endingMove(recentLastCombo)) score -= 3;
+      if (combo[0] === recentLastCombo[0]) score -= 2;
+    }
+
+    const offenseVariety = new Set(combo.filter((move) => !defensiveMoves.includes(move))).size;
+    score += offenseVariety;
+
+    if (combo.some((move) => defensiveMoves.includes(move))) score += 1.2;
+    if (combo.some((move) => move.includes('uppercut'))) score += 0.8;
+    if (combo.some((move) => move.includes('hook'))) score += 0.4;
+    if (combo.some((move) => move.includes('kick') || move.includes('teep') || move.includes('knee') || move.includes('elbow'))) score += 1.3;
+
+    return score;
+  }
+
+  function generateCombo(previous, recentCombos = []) {
     const pool = shuffle(familyPool());
-    const maxLength = difficultyLength();
-    const fallbackPool = pool.length ? pool : buildProceduralCombos(maxLength);
+    const targetLength = difficultyTargetLength();
+    const bounds = difficultyBounds();
+    const fallbackPool = pool.length ? pool.map((combo) => shapeCombo(combo, targetLength)) : buildProceduralCombos(targetLength);
     const candidates = fallbackPool
-      .map((combo) => combo.slice(0, Math.min(combo.length, maxLength)))
-      .concat(buildProceduralCombos(maxLength))
+      .concat(buildProceduralCombos(targetLength))
+      .filter((combo) => combo.length >= bounds.min)
       .filter((combo) => combo.join(', ') !== previous);
-    return candidates[0] || fallbackPool[0] || ['jab', 'cross'];
+    const ranked = candidates
+      .map((combo) => ({ combo, score: scoreComboDiversity(combo, recentCombos) + Math.random() * 0.35 }))
+      .sort((a, b) => b.score - a.score);
+    return ranked[0]?.combo || fallbackPool[0] || ['jab', 'cross'];
   }
 
   function describeComboStyle() {
@@ -1291,6 +1374,7 @@
       showScreen('account');
       return;
     }
+    void requestWakeLock(true);
     readNumericInputs();
     runtime.countdownValue = 3;
     els.countdownRound.textContent = `Round 1 / ${runtime.state.setup.rounds}`;
@@ -1330,6 +1414,7 @@
       totalDuration: sessionTotalDuration(runtime.state.setup),
       combosCalled: 0,
       lastCombo: '',
+      recentCombos: [],
       currentCombo: '',
       nextCombo: '',
       singleCallout: true,
@@ -1368,12 +1453,13 @@
       document.querySelector('[data-screen="live"]').classList.remove('resting');
       playCue('start');
       if (runtime.state.preferences.vibrateOnStart) vibrate([40, 40, 60]);
-      const combo = generateCombo(session.lastCombo);
+      const combo = generateCombo(session.lastCombo, session.recentCombos);
       session.currentComboCanonical = combo.join(', ');
       const formattedCombo = formatComboForStance(session.currentComboCanonical, session.currentStance);
       session.currentCombo = formattedCombo.text;
       session.nextCombo = '';
       session.lastCombo = session.currentComboCanonical;
+      session.recentCombos = [...session.recentCombos, combo].slice(-3);
       session.currentStance = formattedCombo.endingStance;
       session.combosCalled += 1;
       session.attackActive = false;
@@ -1508,12 +1594,14 @@
     const seconds = range[0] === range[1] ? range[0] : range[0] + Math.random() * (range[1] - range[0]);
     runtime.comboTimer = window.setTimeout(() => {
       if (!runtime.currentSession || runtime.currentSession.phase !== 'work') return;
-      const canonicalCombo = runtime.currentSession.nextComboCanonical || generateCombo(runtime.currentSession.lastCombo).join(', ');
+      const canonicalCombo = runtime.currentSession.nextComboCanonical
+        || generateCombo(runtime.currentSession.lastCombo, runtime.currentSession.recentCombos).join(', ');
       const formattedCombo = formatComboForStance(canonicalCombo, runtime.currentSession.currentStance);
       runtime.currentSession.currentComboCanonical = canonicalCombo;
       runtime.currentSession.currentCombo = formattedCombo.text;
       runtime.currentSession.currentStance = formattedCombo.endingStance;
-      runtime.currentSession.nextComboCanonical = generateCombo(canonicalCombo).join(', ');
+      runtime.currentSession.recentCombos = [...runtime.currentSession.recentCombos, canonicalCombo.split(', ').map((move) => move.trim())].slice(-3);
+      runtime.currentSession.nextComboCanonical = generateCombo(canonicalCombo, runtime.currentSession.recentCombos).join(', ');
       runtime.currentSession.lastCombo = canonicalCombo;
       runtime.currentSession.combosCalled += 1;
       updateLiveCombo();
@@ -1640,6 +1728,9 @@
     document.body.classList.remove('attack-mode-state');
     document.body.classList.remove('attack-pulse');
     els.pauseOverlay.classList.add('hidden');
+    if (!runtime.state.preferences.keepAwake) {
+      void requestWakeLock(false);
+    }
     showScreen('home');
   }
 
@@ -1681,6 +1772,9 @@
     els.completeMode.textContent = session.entryMode || session.mode;
     els.completeFlavor.textContent = flavorLines[Math.floor(Math.random() * flavorLines.length)];
     runtime.currentSession = null;
+    if (!runtime.state.preferences.keepAwake) {
+      void requestWakeLock(false);
+    }
     showScreen('complete');
   }
 
@@ -2121,7 +2215,7 @@
     });
 
     document.addEventListener('visibilitychange', async () => {
-      if (document.visibilityState === 'visible' && runtime.state.preferences.keepAwake) {
+      if (document.visibilityState === 'visible' && (runtime.state.preferences.keepAwake || runtime.currentSession || runtime.state.screen === 'countdown')) {
         await requestWakeLock(true);
       }
     });
