@@ -1179,7 +1179,7 @@
   function difficultyBounds() {
     if (runtime.state.setup.difficulty === 'Beginner') return { min: 2, max: 3 };
     if (runtime.state.setup.difficulty === 'Advanced') return { min: 5, max: 7 };
-    return { min: 3, max: 5 };
+    return { min: 3, max: 4 };
   }
 
   function difficultyTargetLength() {
@@ -1236,10 +1236,20 @@
     if (!attackPool.length) return combo.slice(0, targetLength);
     const shaped = combo.slice(0, targetLength);
     while (shaped.length < targetLength) {
+      const previousMove = shaped[shaped.length - 1];
       const shouldUseDefense = defensePool.length
         && (style === 'Counter' || style === 'Defense' || (style === 'Balanced' && Math.random() > 0.72));
       const pool = shouldUseDefense ? defensePool : attackPool;
-      const nextMove = pool[Math.floor(Math.random() * pool.length)];
+      const candidates = pool.filter((move) => {
+        if (move === previousMove) return false;
+        if (defensiveMoves.includes(previousMove) && defensiveMoves.includes(move)) return false;
+        if (previousMove?.includes('hook') && move.includes('hook')) return false;
+        if (previousMove?.includes('uppercut') && move.includes('uppercut')) return false;
+        if (previousMove?.includes('kick') && move.includes('kick')) return false;
+        return true;
+      });
+      const sourcePool = candidates.length ? candidates : pool;
+      const nextMove = sourcePool[Math.floor(Math.random() * sourcePool.length)];
       shaped.push(nextMove);
     }
     return shaped;
