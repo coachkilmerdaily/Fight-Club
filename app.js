@@ -449,11 +449,13 @@
     },
     preferences: {
       voiceEnabled: true,
+      voiceEngine: 'browser',
       bellsEnabled: true,
       uiGongEnabled: true,
       warningCues: true,
       speechRate: 0.92,
       selectedVoiceURI: '',
+      elevenLabsVoiceId: '',
       largeText: false,
       keepAwake: false,
       vibrateOnStart: true,
@@ -494,6 +496,8 @@
     attackEndTimer: null,
     wakeLock: null,
     deferredPrompt: null,
+    currentAudio: null,
+    ttsAbortController: null,
   };
 
   const els = cacheElements();
@@ -567,7 +571,9 @@
       resetDataButton: document.getElementById('resetDataButton'),
       speechRateInput: document.getElementById('speechRateInput'),
       speechRateValue: document.getElementById('speechRateValue'),
+      voiceEngineSelect: document.getElementById('voiceEngineSelect'),
       voiceSelect: document.getElementById('voiceSelect'),
+      elevenLabsVoiceIdInput: document.getElementById('elevenLabsVoiceIdInput'),
       voiceEnabledInput: document.getElementById('voiceEnabledInput'),
       bellEnabledInput: document.getElementById('bellEnabledInput'),
       uiGongInput: document.getElementById('uiGongInput'),
@@ -854,9 +860,12 @@
     els.bellEnabledInput.checked = prefs.bellsEnabled;
     els.uiGongInput.checked = prefs.uiGongEnabled;
     els.warningEnabledInput.checked = prefs.warningCues;
+    els.voiceEngineSelect.value = prefs.voiceEngine || 'browser';
     els.speechRateInput.value = prefs.speechRate;
     els.speechRateValue.textContent = `${Number(prefs.speechRate).toFixed(2)}x`;
     els.voiceSelect.value = prefs.selectedVoiceURI;
+    els.elevenLabsVoiceIdInput.value = prefs.elevenLabsVoiceId || '';
+    els.voiceSelect.disabled = (prefs.voiceEngine || 'browser') !== 'browser';
     els.wakeLockInput.checked = prefs.keepAwake;
     els.largeTextInput.checked = prefs.largeText;
     els.vibrateStartInput.checked = prefs.vibrateOnStart;
@@ -994,11 +1003,67 @@
   }
 
   function stopSpeech() {
+    if (runtime.ttsAbortController) {
+      runtime.ttsAbortController.abort();
+      runtime.ttsAbortController = null;
+    }
+    if (runtime.currentAudio) {
+      runtime.currentAudio.pause();
+      runtime.currentAudio.src = '';
+      runtime.currentAudio = null;
+    }
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
   }
 
-  function speak(text, priority) {
+  async function playElevenLabsSpeech(text) {
+    const voiceId = (runtime.state.preferences.elevenLabsVoiceId || '').trim();
+    if (!voiceId) throw new Error('Missing ElevenLabs voice ID');
+    const controller = new AbortController();
+    runtime.ttsAbortController = controller;
+    const response = await fetch('/api/elevenlabs-tts', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        text,
+        voiceId,
+        rate: Number(runtime.state.preferences.speechRate) || 1,
+      }),
+      signal: controller.signal,
+    });
+    if (!response.ok) {
+      throw new Error(`ElevenLabs request failed: ${response.status}`);
+    }
+    const blob = await response.blob();
+    if (runtime.ttsAbortController === controller) {
+      runtime.ttsAbortController = null;
+    }
+    const audioUrl = URL.createObjectURL(blob);
+    const audio = new Audio(audioUrl);
+    runtime.currentAudio = audio;
+    audio.onended = () => {
+      URL.revokeObjectURL(audioUrl);
+      if (runtime.currentAudio === audio) runtime.currentAudio = null;
+    };
+    audio.onerror = () => {
+      URL.revokeObjectURL(audioUrl);
+      if (runtime.currentAudio === audio) runtime.currentAudio = null;
+    };
+    await audio.play();
+  }
+
+  async function speak(text, priority) {
     if (!runtime.state.preferences.voiceEnabled || runtime.state.preferences.muted) return;
+    if (priority !== 'queue') stopSpeech();
+    if (runtime.state.preferences.voiceEngine === 'elevenlabs') {
+      try {
+        await playElevenLabsSpeech(text);
+        return;
+      } catch (_error) {
+        // Fall back to browser speech if ElevenLabs is unavailable.
+      }
+    }
     if (!('speechSynthesis' in window)) return;
     const voiceURI = currentVoiceURI();
     if (!voiceURI) return;
@@ -1013,7 +1078,6 @@
     utterance.rate = runtime.state.preferences.speechRate;
     utterance.volume = 1;
     utterance.pitch = 0.78;
-    if (priority !== 'queue') window.speechSynthesis.cancel();
     window.speechSynthesis.speak(utterance);
   }
 
@@ -2131,6 +2195,11 @@
       runtime.state.preferences.warningCues = els.warningEnabledInput.checked;
       saveState();
     });
+    els.voiceEngineSelect.addEventListener('change', () => {
+      runtime.state.preferences.voiceEngine = els.voiceEngineSelect.value;
+      renderPreferences();
+      saveState();
+    });
     els.speechRateInput.addEventListener('input', () => {
       runtime.state.preferences.speechRate = Number(els.speechRateInput.value);
       renderPreferences();
@@ -2138,6 +2207,10 @@
     });
     els.voiceSelect.addEventListener('change', () => {
       runtime.state.preferences.selectedVoiceURI = els.voiceSelect.value;
+      saveState();
+    });
+    els.elevenLabsVoiceIdInput.addEventListener('change', () => {
+      runtime.state.preferences.elevenLabsVoiceId = (els.elevenLabsVoiceIdInput.value || '').trim();
       saveState();
     });
     els.largeTextInput.addEventListener('change', () => {
