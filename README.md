@@ -33,8 +33,7 @@ Add these environment variables in Vercel:
 Then in the app:
 
 1. Open `Settings`
-2. Set `Voice engine` to `ElevenLabs`
-3. Paste your ElevenLabs `Voice ID`
+2. Turn `Voice on`
 
 If ElevenLabs is unavailable, the app falls back to browser speech.
 

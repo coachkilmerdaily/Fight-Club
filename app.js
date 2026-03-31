@@ -2,15 +2,9 @@
   const STORAGE_KEY = 'fight-flow-state-v2';
   const HISTORY_LIMIT = 20;
   const FREE_SESSION_LIMIT = 5;
+  const ELEVENLABS_COACH_VOICE_ID = 'tZssYepgGaQmegsMEXjK';
   const RING_RADIUS = 92;
   const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
-
-  const coachVoicePresets = [
-    { id: 'auto', label: 'Auto detect' },
-    { id: 'coach-1', label: 'American coach voice 1' },
-    { id: 'coach-2', label: 'American coach voice 2' },
-    { id: 'coach-3', label: 'American coach voice 3' },
-  ];
 
   const builtInPresets = [
     {
@@ -23,7 +17,6 @@
       difficulty: 'Intermediate',
       comboStyle: 'Balanced',
       calloutFrequency: 'Every 7 sec',
-      voicePreset: 'auto',
       builtIn: true,
     },
     {
@@ -36,7 +29,6 @@
       difficulty: 'Beginner',
       comboStyle: 'Defense',
       calloutFrequency: 'Every 7 sec',
-      voicePreset: 'auto',
       builtIn: true,
     },
     {
@@ -49,7 +41,6 @@
       difficulty: 'Intermediate',
       comboStyle: 'Balanced',
       calloutFrequency: 'Every 5 sec',
-      voicePreset: 'auto',
       builtIn: true,
     },
     {
@@ -62,7 +53,6 @@
       difficulty: 'Advanced',
       comboStyle: 'Pressure',
       calloutFrequency: 'Random',
-      voicePreset: 'coach-2',
       builtIn: true,
     },
     {
@@ -75,7 +65,6 @@
       difficulty: 'Beginner',
       comboStyle: 'Freestyle',
       calloutFrequency: 'Every 5 sec',
-      voicePreset: 'auto',
       builtIn: true,
     },
   ];
@@ -444,18 +433,14 @@
       difficulty: 'Intermediate',
       comboStyle: 'Balanced',
       calloutFrequency: 'Every 7 sec',
-      voicePreset: 'auto',
       coachPersonality: 'Coach',
     },
     preferences: {
       voiceEnabled: true,
-      voiceEngine: 'browser',
       bellsEnabled: true,
       uiGongEnabled: true,
       warningCues: true,
       speechRate: 0.92,
-      selectedVoiceURI: '',
-      elevenLabsVoiceId: '',
       largeText: false,
       keepAwake: false,
       vibrateOnStart: true,
@@ -483,7 +468,6 @@
 
   const runtime = {
     state: loadState(),
-    voices: [],
     countdownTimer: null,
     phaseTimer: null,
     comboTimer: null,
@@ -523,7 +507,6 @@
       difficultySegment: document.getElementById('difficultySegment'),
       styleSegment: document.getElementById('styleSegment'),
       coachSegment: document.getElementById('coachSegment'),
-      voiceSegment: document.getElementById('voiceSegment'),
       frequencySegment: document.getElementById('frequencySegment'),
       activeRecoveryInput: document.getElementById('activeRecoveryInput'),
       attackModeInput: document.getElementById('attackModeInput'),
@@ -571,9 +554,6 @@
       resetDataButton: document.getElementById('resetDataButton'),
       speechRateInput: document.getElementById('speechRateInput'),
       speechRateValue: document.getElementById('speechRateValue'),
-      voiceEngineSelect: document.getElementById('voiceEngineSelect'),
-      voiceSelect: document.getElementById('voiceSelect'),
-      elevenLabsVoiceIdInput: document.getElementById('elevenLabsVoiceIdInput'),
       voiceEnabledInput: document.getElementById('voiceEnabledInput'),
       bellEnabledInput: document.getElementById('bellEnabledInput'),
       uiGongInput: document.getElementById('uiGongInput'),
@@ -783,7 +763,6 @@
     createSegmentButtons(els.styleSegment, segmentDefinitions.comboStyle, 'comboStyle');
     createSegmentButtons(els.coachSegment, segmentDefinitions.coachPersonality, 'coachPersonality');
     createSegmentButtons(els.frequencySegment, segmentDefinitions.calloutFrequency, 'calloutFrequency');
-    createSegmentButtons(els.voiceSegment, coachVoicePresets, 'voicePreset', (item) => item.label);
     renderRecoveryCategoryButtons();
   }
 
@@ -860,12 +839,8 @@
     els.bellEnabledInput.checked = prefs.bellsEnabled;
     els.uiGongInput.checked = prefs.uiGongEnabled;
     els.warningEnabledInput.checked = prefs.warningCues;
-    els.voiceEngineSelect.value = prefs.voiceEngine || 'browser';
     els.speechRateInput.value = prefs.speechRate;
     els.speechRateValue.textContent = `${Number(prefs.speechRate).toFixed(2)}x`;
-    els.voiceSelect.value = prefs.selectedVoiceURI;
-    els.elevenLabsVoiceIdInput.value = prefs.elevenLabsVoiceId || '';
-    els.voiceSelect.disabled = (prefs.voiceEngine || 'browser') !== 'browser';
     els.wakeLockInput.checked = prefs.keepAwake;
     els.largeTextInput.checked = prefs.largeText;
     els.vibrateStartInput.checked = prefs.vibrateOnStart;
@@ -964,17 +939,9 @@
     saveState();
   }
 
-  function currentVoiceURI() {
-    const prefs = runtime.state.preferences;
-    const preset = runtime.state.setup.voicePreset;
-    if (preset === 'auto' || !preset) return prefs.selectedVoiceURI;
-    const index = coachVoicePresets.findIndex((item) => item.id === preset);
-    const available = runtime.voices.filter((voice) => voice.lang.toLowerCase().startsWith('en-us'));
-    const voice = available[index - 1] || available[0] || runtime.voices[0];
-    return voice ? voice.voiceURI : '';
-  }
-
-  function pickPreferredVoice(voices) {
+  function pickFallbackVoice() {
+    if (!('speechSynthesis' in window)) return null;
+    const voices = window.speechSynthesis.getVoices().filter((voice) => voice.lang.toLowerCase().startsWith('en'));
     const priorities = [
       (voice) => /en-us/i.test(voice.lang) && /(david|guy|roger|jason|mark|tony|samantha|allison)/i.test(voice.name),
       (voice) => /en-us/i.test(voice.lang) && /(microsoft|natural|enhanced|premium)/i.test(voice.name),
@@ -985,21 +952,7 @@
       const match = voices.find(matcher);
       if (match) return match;
     }
-    return voices[0];
-  }
-
-  function loadVoices() {
-    if (!('speechSynthesis' in window)) return;
-    runtime.voices = window.speechSynthesis.getVoices().filter((voice) => voice.lang.toLowerCase().startsWith('en'));
-    if (!runtime.state.preferences.selectedVoiceURI && runtime.voices.length > 0) {
-      const preferred = pickPreferredVoice(runtime.voices);
-      runtime.state.preferences.selectedVoiceURI = preferred.voiceURI;
-      saveState();
-    }
-    els.voiceSelect.innerHTML = runtime.voices.length
-      ? runtime.voices.map((voice) => `<option value="${voice.voiceURI}">${voice.name} (${voice.lang})</option>`).join('')
-      : '<option value="">No English voices found</option>';
-    renderPreferences();
+    return voices[0] || null;
   }
 
   function stopSpeech() {
@@ -1016,8 +969,7 @@
   }
 
   async function playElevenLabsSpeech(text) {
-    const voiceId = (runtime.state.preferences.elevenLabsVoiceId || '').trim();
-    if (!voiceId) throw new Error('Missing ElevenLabs voice ID');
+    const voiceId = ELEVENLABS_COACH_VOICE_ID;
     const controller = new AbortController();
     runtime.ttsAbortController = controller;
     const response = await fetch('/api/elevenlabs-tts', {
@@ -1056,19 +1008,15 @@
   async function speak(text, priority) {
     if (!runtime.state.preferences.voiceEnabled || runtime.state.preferences.muted) return;
     if (priority !== 'queue') stopSpeech();
-    if (runtime.state.preferences.voiceEngine === 'elevenlabs') {
-      try {
-        await playElevenLabsSpeech(text);
-        return;
-      } catch (_error) {
-        // Fall back to browser speech if ElevenLabs is unavailable.
-      }
+    try {
+      await playElevenLabsSpeech(text);
+      return;
+    } catch (_error) {
+      // Fall back to browser speech if ElevenLabs is unavailable.
     }
     if (!('speechSynthesis' in window)) return;
-    const voiceURI = currentVoiceURI();
-    if (!voiceURI) return;
     const utterance = new SpeechSynthesisUtterance(text);
-    const voice = runtime.voices.find((item) => item.voiceURI === voiceURI);
+    const voice = pickFallbackVoice();
     if (voice) {
       utterance.voice = voice;
       utterance.lang = voice.lang;
@@ -1871,7 +1819,6 @@
       difficulty: setup.difficulty,
       comboStyle: setup.comboStyle,
       calloutFrequency: setup.calloutFrequency,
-      voicePreset: setup.voicePreset,
       builtIn: false,
     };
     runtime.state.presets = mergePresets([...runtime.state.presets.filter((item) => !item.builtIn), preset]);
@@ -1898,7 +1845,6 @@
       difficulty: preset.difficulty,
       comboStyle: preset.comboStyle,
       calloutFrequency: preset.calloutFrequency,
-      voicePreset: preset.voicePreset || 'auto',
     };
     saveState();
     renderSetupForm();
@@ -2195,22 +2141,9 @@
       runtime.state.preferences.warningCues = els.warningEnabledInput.checked;
       saveState();
     });
-    els.voiceEngineSelect.addEventListener('change', () => {
-      runtime.state.preferences.voiceEngine = els.voiceEngineSelect.value;
-      renderPreferences();
-      saveState();
-    });
     els.speechRateInput.addEventListener('input', () => {
       runtime.state.preferences.speechRate = Number(els.speechRateInput.value);
       renderPreferences();
-      saveState();
-    });
-    els.voiceSelect.addEventListener('change', () => {
-      runtime.state.preferences.selectedVoiceURI = els.voiceSelect.value;
-      saveState();
-    });
-    els.elevenLabsVoiceIdInput.addEventListener('change', () => {
-      runtime.state.preferences.elevenLabsVoiceId = (els.elevenLabsVoiceIdInput.value || '').trim();
       saveState();
     });
     els.largeTextInput.addEventListener('change', () => {
@@ -2328,10 +2261,6 @@
     updateHomeBackButton();
     registerEvents();
     showScreen(runtime.state.screen || 'home');
-    loadVoices();
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.onvoiceschanged = loadVoices;
-    }
     registerPWA();
     requestWakeLock(runtime.state.preferences.keepAwake);
   }
